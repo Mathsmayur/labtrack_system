@@ -1,0 +1,76 @@
+.pc-management {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.pc-management h2 {
+  margin-top: 0;
+  color: #333;
+}
+
+.pc-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.pc-form .form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.pc-form label {
+  margin-bottom: 5px;
+  color: #555;
+  font-weight: 500;
+}
+
+.pc-form input,
+.pc-form select,
+.pc-form textarea {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 1rem;
+}
+
+.pc-form textarea {
+  resize: vertical;
+  font-family: inherit;
+}
+
+.pc-form .form-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.pc-form .submit-button,
+.pc-form .cancel-button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.pc-form .submit-button {
+  background: #667eea;
+  color: white;
+}
+
+.pc-form .submit-button:hover {
+  background: #5568d3;
+}
+
+.pc-form .cancel-button {
+  background: #ddd;
+  color: #333;
+}
+
+.pc-form .cancel-button:hover {
+  background: #ccc;
+}
