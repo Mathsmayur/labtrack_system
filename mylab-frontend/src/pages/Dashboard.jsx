@@ -55,7 +55,7 @@ function Dashboard() {
       console.error('Failed to load labs:', error);
     }
   };
- 
+
   const [showAddLabForm, setShowAddLabForm] = useState(false);
   const [newLabName, setNewLabName] = useState('');
   const [newLabDepartment, setNewLabDepartment] = useState('CE');
@@ -204,7 +204,7 @@ function Dashboard() {
                     className={`lab-button ${selectedLab?.id === lab.id ? 'active' : ''}`}
                     onClick={() => setSelectedLab(lab)}
                   >
-                    {lab.name}
+                    {lab.name || `Lab ${lab.id}`}
                   </button>
                 ))}
               </div>
@@ -258,7 +258,9 @@ function Dashboard() {
                   >
                     <div className="pc-status-indicator" style={{ backgroundColor: getStatusColor(pc.status) }}></div>
                     <h3>{pc.pcNumber}</h3>
-                    <p className="pc-status">{pc.status.replace('_', ' ')}</p>
+                    <p className="pc-status">
+                      {pc.status.toLowerCase().replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                    </p>
                     <button
                       className="complaint-button"
                       onClick={(e) => {

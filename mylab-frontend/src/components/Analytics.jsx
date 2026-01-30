@@ -36,7 +36,7 @@ function Analytics() {
   return (
     <div className="analytics-container">
       <h2>Analytics & Reports</h2>
-      
+
       <div className="analytics-grid">
         <div className="analytics-card">
           <h3>Most Problematic PCs</h3>
@@ -44,8 +44,8 @@ function Analytics() {
             <ul className="analytics-list">
               {analytics.mostProblematicPCs.slice(0, 5).map((item, index) => (
                 <li key={index}>
-                  <span>{item.pc?.pcNumber || 'N/A'}</span>
-                  <span className="count">{item.complaintCount} complaints</span>
+                  <span style={{ fontWeight: 600 }}>PC: {item.pc?.pcNumber || item.pc?.id || 'N/A'}</span>
+                  <span className="count">{item.complaintCount} {item.complaintCount === 1 ? 'complaint' : 'complaints'}</span>
                 </li>
               ))}
             </ul>
@@ -83,7 +83,7 @@ function Analytics() {
           <div className="stat-item">
             <span>Average Repair Time:</span>
             <span className="stat-value">
-              {analytics.averageRepairTime 
+              {analytics.averageRepairTime !== null && analytics.averageRepairTime !== undefined
                 ? `${Math.round(analytics.averageRepairTime)} hours`
                 : 'N/A'}
             </span>

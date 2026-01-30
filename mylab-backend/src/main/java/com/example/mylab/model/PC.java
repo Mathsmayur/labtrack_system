@@ -31,7 +31,7 @@ public class PC {
     private PCStatus status; // WORKING, NON_WORKING, REPAIR_IN_PROGRESS
     @ManyToOne(fetch = FetchType.LAZY, optional = true)
     @NotFound(action = NotFoundAction.IGNORE)
-    @JoinColumn(name = "pc_type_id", nullable = false)
+    @JoinColumn(name = "pc_type_id", nullable = true)
     private PCType pcType;
 
     @OneToMany(mappedBy = "pc", cascade = CascadeType.ALL)
