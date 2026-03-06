@@ -18,9 +18,24 @@ public class DefectHistoryService {
     @Autowired
     private PCRepository pcRepository;
 
-    public List<DefectHistory> getDefectHistoryByPC(Long pcId) {
+    public List<com.example.mylab.dto.DefectHistoryDTO> getDefectHistoryByPC(Long pcId) {
         PC pc = pcRepository.findById(pcId)
             .orElseThrow(() -> new RuntimeException("PC not found"));
-        return defectHistoryRepository.findByPcOrderByOccurredAtDesc(pc);
+        return defectHistoryRepository.findByPcOrderByOccurredAtDesc(pc).stream()
+                .map(this::convertToDTO)
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    private com.example.mylab.dto.DefectHistoryDTO convertToDTO(DefectHistory history) {
+        return new com.example.mylab.dto.DefectHistoryDTO(
+                history.getId(),
+                history.getPc().getId(),
+                history.getProblemType(),
+                history.getDescription(),
+                history.getOccurredAt(),
+                history.getResolvedAt(),
+                history.getStatus(),
+                history.getTechnicianRemarks()
+        );
     }
 }

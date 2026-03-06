@@ -18,11 +18,12 @@ function PCManagement({ onPCUpdated }) {
   const [processor, setProcessor] = useState('');
   const [editingPC, setEditingPC] = useState(null);
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [unassignedPCs, setUnassignedPCs] = useState([]);
   const [selectedUnassignedPCId, setSelectedUnassignedPCId] = useState(null);
   const [assignPcNumber, setAssignPcNumber] = useState('');
   const [currentUser, setCurrentUser] = useState(null);
-  
+
   // Bulk Add State
   const [showBulkAdd, setShowBulkAdd] = useState(false);
   const [bulkQuantity, setBulkQuantity] = useState(1);
@@ -51,6 +52,7 @@ function PCManagement({ onPCUpdated }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setSuccessMessage('');
 
     try {
       if (editingPC) {
@@ -58,6 +60,7 @@ function PCManagement({ onPCUpdated }) {
           status: status,
           specifications: specifications
         });
+        setSuccessMessage('PC updated successfully!');
       } else {
         await createPC({
           labId: selectedLab,
@@ -71,17 +74,25 @@ function PCManagement({ onPCUpdated }) {
           rom,
           processor
         });
+        setSuccessMessage('PC added successfully!');
       }
       resetForm();
-      if (onPCUpdated) onPCUpdated();
+      if (onPCUpdated) {
+        onPCUpdated();
+      }
+      // Clear success message after 3 seconds
+      setTimeout(() => setSuccessMessage(''), 3000);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to save PC');
+      const errorMessage = err.response?.data?.message || err.response?.data?.error || err.message || 'Failed to save PC';
+      setError(errorMessage);
+      console.error('Error creating PC:', err.response?.data || err);
     }
   };
 
   const handleBulkSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setSuccessMessage('');
 
     try {
       await createBulkPCs({
@@ -96,11 +107,12 @@ function PCManagement({ onPCUpdated }) {
       });
       setShowBulkAdd(false);
       resetForm();
-      if (onPCUpdated) onPCUpdated();
-      // Load unassigned pcs if we didn't select a lab (though current UI forces lab, backend might not)
-      // Actually usually bulk PCs are unassigned or assigned to lab. 
-      // If prompt logic was to create "unassigned" PCs, labId might be null.
-      // But typically we assign to a lab or pool.
+      setSuccessMessage(`Successfully added ${bulkQuantity} PC(s)!`);
+      if (onPCUpdated) {
+        onPCUpdated();
+      }
+      // Clear success message after 3 seconds
+      setTimeout(() => setSuccessMessage(''), 3000);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to bulk add PCs');
     }
@@ -118,6 +130,8 @@ function PCManagement({ onPCUpdated }) {
     setProcessor('');
     setEditingPC(null);
     setBulkQuantity(1);
+    setError('');
+    setSuccessMessage('');
   };
 
   const loadUnassignedPCs = async () => {
@@ -152,8 +166,8 @@ function PCManagement({ onPCUpdated }) {
       <div className="pc-management-header">
         <h2>PC Management</h2>
         {currentUser?.role === 'ADMIN' && (
-          <button 
-            className="bulk-add-btn" 
+          <button
+            className="bulk-add-btn"
             onClick={() => {
               resetForm();
               setShowBulkAdd(!showBulkAdd);
@@ -166,8 +180,8 @@ function PCManagement({ onPCUpdated }) {
 
       {showBulkAdd ? (
         <form onSubmit={handleBulkSubmit} className="pc-form">
-           <h3>Bulk Add PCs</h3>
-           <div className="form-group">
+          <h3>Bulk Add PCs</h3>
+          <div className="form-group">
             <label>Lab (Optional)</label>
             <select
               value={selectedLab || ''}
@@ -209,13 +223,14 @@ function PCManagement({ onPCUpdated }) {
               <input type="text" value={processor} onChange={(e) => setProcessor(e.target.value)} required placeholder="Intel i5" />
             </div>
           </div>
-           <div className="form-group">
-              <label>Quantity *</label>
-              <input type="number" min="1" value={bulkQuantity} onChange={(e) => setBulkQuantity(e.target.value)} required />
-            </div>
+          <div className="form-group">
+            <label>Quantity *</label>
+            <input type="number" min="1" value={bulkQuantity} onChange={(e) => setBulkQuantity(e.target.value)} required />
+          </div>
           {error && <div className="error-message">{error}</div>}
+          {successMessage && <div className="success-message" style={{color: 'green', padding: '10px', marginBottom: '10px', backgroundColor: '#e8f5e9', borderRadius: '4px'}}>{successMessage}</div>}
           <div className="form-actions">
-             <button type="submit" className="submit-button">Bulk Create</button>
+            <button type="submit" className="submit-button">Bulk Create</button>
           </div>
         </form>
       ) : (
@@ -268,12 +283,12 @@ function PCManagement({ onPCUpdated }) {
           </div>
           <div className="form-row">
             <div className="form-group">
-              <label>Brand</label>
-              <input type="text" value={brand} onChange={(e) => setBrand(e.target.value)} placeholder="Brand" />
+              <label>Brand *</label>
+              <input type="text" value={brand} onChange={(e) => setBrand(e.target.value)} required placeholder="Brand" />
             </div>
             <div className="form-group">
-              <label>Model</label>
-              <input type="text" value={model} onChange={(e) => setModel(e.target.value)} placeholder="Model" />
+              <label>Model *</label>
+              <input type="text" value={model} onChange={(e) => setModel(e.target.value)} required placeholder="Model" />
             </div>
           </div>
           <div className="form-row">
@@ -282,21 +297,22 @@ function PCManagement({ onPCUpdated }) {
               <input type="number" value={productionYear} onChange={(e) => setProductionYear(e.target.value)} placeholder="2021" />
             </div>
             <div className="form-group">
-              <label>RAM</label>
-              <input type="text" value={ram} onChange={(e) => setRam(e.target.value)} placeholder="8GB" />
+              <label>RAM *</label>
+              <input type="text" value={ram} onChange={(e) => setRam(e.target.value)} required placeholder="8GB" />
             </div>
           </div>
           <div className="form-row">
             <div className="form-group">
-              <label>ROM</label>
-              <input type="text" value={rom} onChange={(e) => setRom(e.target.value)} placeholder="256GB" />
+              <label>ROM *</label>
+              <input type="text" value={rom} onChange={(e) => setRom(e.target.value)} required placeholder="256GB" />
             </div>
             <div className="form-group">
-              <label>Processor</label>
-              <input type="text" value={processor} onChange={(e) => setProcessor(e.target.value)} placeholder="Intel i5" />
+              <label>Processor *</label>
+              <input type="text" value={processor} onChange={(e) => setProcessor(e.target.value)} required placeholder="Intel i5" />
             </div>
           </div>
           {error && <div className="error-message">{error}</div>}
+          {successMessage && <div className="success-message" style={{color: 'green', padding: '10px', marginBottom: '10px', backgroundColor: '#e8f5e9', borderRadius: '4px'}}>{successMessage}</div>}
           <div className="form-actions">
             <button type="submit" className="submit-button">
               {editingPC ? 'Update PC' : 'Add PC'}
@@ -318,7 +334,9 @@ function PCManagement({ onPCUpdated }) {
             <select value={selectedUnassignedPCId || ''} onChange={(e) => setSelectedUnassignedPCId(e.target.value === '' ? null : Number(e.target.value))}>
               <option value="">Select PC</option>
               {unassignedPCs.map(pc => (
-                <option key={pc.id} value={pc.id}>{pc.id} - {pc.brand ? `${pc.brand} ${pc.model}` : 'Type N/A'}</option>
+                <option key={pc.id} value={pc.id}>
+                  {pc.id} - {pc.brand} {pc.model} | {pc.processor} | {pc.ram} / {pc.rom}
+                </option>
               ))}
             </select>
           </div>

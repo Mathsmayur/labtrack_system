@@ -23,6 +23,6 @@ public interface ComplaintRepository extends JpaRepository<Complaint, Long> {
     @Query("SELECT COUNT(c) FROM Complaint c WHERE c.reportedAt BETWEEN :start AND :end")
     Long countByDateRange(LocalDateTime start, LocalDateTime end);
     
-    @Query("SELECT AVG(TIMESTAMPDIFF(HOUR, c.reportedAt, c.resolvedAt)) FROM Complaint c WHERE c.resolvedAt IS NOT NULL")
+    @Query(value = "SELECT AVG(TIMESTAMPDIFF(HOUR, reported_at, resolved_at)) FROM complaints WHERE resolved_at IS NOT NULL", nativeQuery = true)
     Double findAverageRepairTime();
 }

@@ -51,7 +51,8 @@ public class ComplaintService {
         complaint.setReportedAt(LocalDateTime.now());
         complaint.setStatus(ComplaintStatus.PENDING);
 
-        // Update PC status if not already non-working
+        // Update PC status to NON_WORKING when a complaint is reported
+        // Only change if currently WORKING (don't change if already NON_WORKING or REPAIR_IN_PROGRESS)
         if (pc.getStatus() == PCStatus.WORKING) {
             pc.setStatus(PCStatus.NON_WORKING);
             pcRepository.save(pc);

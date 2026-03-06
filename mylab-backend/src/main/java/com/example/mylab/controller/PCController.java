@@ -43,14 +43,26 @@ public class PCController {
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'PROFESSOR', 'TECHNICIAN')")
-    public ResponseEntity<PCDTO> createPC(@RequestBody PCDTO pcDTO) {
-        return ResponseEntity.ok(pcService.createPC(pcDTO));
+    public ResponseEntity<?> createPC(@RequestBody PCDTO pcDTO) {
+        try {
+            return ResponseEntity.ok(pcService.createPC(pcDTO));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(new ErrorResponse("Failed to create PC: " + e.getMessage()));
+        }
     }
 
     @PostMapping("/bulk")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<PCDTO>> createBulkPCs(@RequestBody BulkPCRequest request) {
-        return ResponseEntity.ok(pcService.createBulkPCs(request));
+    public ResponseEntity<?> createBulkPCs(@RequestBody BulkPCRequest request) {
+        try {
+            return ResponseEntity.ok(pcService.createBulkPCs(request));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(new ErrorResponse("Failed to bulk create PCs: " + e.getMessage()));
+        }
     }
 
     @PutMapping("/{id}")
@@ -84,5 +96,17 @@ public class PCController {
     public ResponseEntity<Integer> cleanupAllInvalidPcTypes() {
         int updated = pcService.cleanupAllInvalidPcTypes();
         return ResponseEntity.ok(updated);
+    }
+
+    private static class ErrorResponse {
+        private String message;
+
+        public ErrorResponse(String message) {
+            this.message = message;
+        }
+
+        public String getMessage() {
+            return message;
+        }
     }
 }

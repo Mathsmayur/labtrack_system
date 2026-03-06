@@ -22,4 +22,5 @@ public class PCDTO {
     private String ram;
     private String rom;
     private String processor;
+    private String latestProblemType;
 }

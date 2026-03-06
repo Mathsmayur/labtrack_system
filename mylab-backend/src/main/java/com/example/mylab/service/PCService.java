@@ -32,6 +32,11 @@ public class PCService {
     private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
 
     public PCDTO createPC(PCDTO pcDTO) {
+        // Validate PC number
+        if (pcDTO.getPcNumber() == null || pcDTO.getPcNumber().trim().isEmpty()) {
+            throw new RuntimeException("PC number is required");
+        }
+
         Lab lab = null;
         if (pcDTO.getLabId() != null) {
             lab = labRepository.findById(pcDTO.getLabId())
@@ -53,7 +58,21 @@ public class PCService {
         if (pcDTO.getPcTypeId() != null && pcDTO.getPcTypeId() > 0) {
             pcType = pcTypeRepository.findById(pcDTO.getPcTypeId())
                 .orElseThrow(() -> new RuntimeException("PC type not found"));
-        } else if (pcDTO.getBrand() != null) {
+        } else if (pcDTO.getBrand() != null && !pcDTO.getBrand().trim().isEmpty()) {
+            // Validate that all required PC type fields are provided
+            if (pcDTO.getModel() == null || pcDTO.getModel().trim().isEmpty()) {
+                throw new RuntimeException("Model is required when providing PC type information");
+            }
+            if (pcDTO.getRam() == null || pcDTO.getRam().trim().isEmpty()) {
+                throw new RuntimeException("RAM is required when providing PC type information");
+            }
+            if (pcDTO.getRom() == null || pcDTO.getRom().trim().isEmpty()) {
+                throw new RuntimeException("ROM is required when providing PC type information");
+            }
+            if (pcDTO.getProcessor() == null || pcDTO.getProcessor().trim().isEmpty()) {
+                throw new RuntimeException("Processor is required when providing PC type information");
+            }
+            
             pcType = pcTypeRepository.findByBrandAndModelAndProductionYearAndRamAndRomAndProcessor(
                 pcDTO.getBrand(),
                 pcDTO.getModel(),
@@ -74,7 +93,7 @@ public class PCService {
                 pcType = pcTypeRepository.save(pcType);
             }
         } else {
-            throw new RuntimeException("PC type information required");
+            throw new RuntimeException("PC type information required. Please provide brand, model, RAM, ROM, and processor.");
         }
 
         pc.setPcType(pcType);
@@ -203,7 +222,12 @@ public class PCService {
             type != null ? type.getProductionYear() : null,
             type != null ? type.getRam() : null,
             type != null ? type.getRom() : null,
-            type != null ? type.getProcessor() : null
+            type != null ? type.getProcessor() : null,
+            pc.getComplaints() != null ? pc.getComplaints().stream()
+                .filter(c -> !c.getStatus().equals(com.example.mylab.model.ComplaintStatus.RESOLVED))
+                .sorted((a, b) -> b.getReportedAt().compareTo(a.getReportedAt()))
+                .map(c -> c.getProblemType().name())
+                .findFirst().orElse(null) : null
         );
     }
 

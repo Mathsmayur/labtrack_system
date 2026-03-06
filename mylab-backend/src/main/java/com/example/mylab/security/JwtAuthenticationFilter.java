@@ -56,7 +56,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         userDetails, null, userDetails.getAuthorities());
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
+                logger.debug("Authentication set for user: " + username + " with authorities: " + userDetails.getAuthorities());
+            } else {
+                logger.debug("Token validation failed for user: " + username);
             }
+        } else if (username == null) {
+            logger.debug("No username extracted from token");
+        } else {
+            logger.debug("Authentication already exists for user: " + username);
         }
         filterChain.doFilter(request, response);
     }

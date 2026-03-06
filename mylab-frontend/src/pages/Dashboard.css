@@ -131,6 +131,80 @@
   border-color: #667eea;
 }
 
+.lab-btn-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.lab-status-mini {
+  font-size: 0.65rem;
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.lab-status-mini.occupied {
+  background: #fed7d7;
+  color: #c53030;
+}
+
+.lab-button.active .lab-status-mini.occupied {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.lab-status-mini.unoccupied {
+  background: #c6f6d5;
+  color: #2f855a;
+}
+
+.lab-button.active .lab-status-mini.unoccupied {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.lab-status-times {
+  margin-top: 8px;
+  font-size: 0.7rem;
+  opacity: 0.8;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.lab-status-times div {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lab-button.active .lab-status-times {
+  opacity: 0.9;
+}
+
+.inventory-button {
+  border-left: 5px solid #718096;
+  margin-bottom: 20px;
+}
+
+.lab-status-mini.count {
+  background: #ebf8ff;
+  color: #2b6cb0;
+}
+
+.lab-button.active .lab-status-mini.count {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.unassigned-desc {
+  font-style: italic;
+  font-size: 0.65rem;
+}
+
 .main-content {
   flex: 1;
   padding: 20px;
@@ -212,10 +286,24 @@
 }
 
 .pc-status {
-  margin: 0 0 15px 0;
+  margin: 0 0 10px 0;
   font-size: 0.95rem;
   color: #718096;
   font-weight: 500;
+}
+
+.pc-issue-badge {
+  background: #fff5f5;
+  color: #c53030;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: inline-block;
+  margin-bottom: 15px;
+  border: 1px solid #feb2b2;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .complaint-button {

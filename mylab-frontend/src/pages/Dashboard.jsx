@@ -2,14 +2,16 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getCurrentUser, logout } from '../services/authService';
 import { getLabs, createLab } from '../services/labService';
-import { getPCsByLab, getPCById, updatePC as updatePCService } from '../services/pcService';
+import { getPCsByLab, getPCById, updatePC as updatePCService, getUnassignedPCs } from '../services/pcService';
 import { getDefectHistoryByPC } from '../services/defectHistoryService';
 import { createComplaint } from '../services/complaintService';
+import { getLabStatus } from '../services/labScheduleService';
 import PCManagement from '../components/PCManagement';
 import Analytics from '../components/Analytics';
 import UserManagement from '../components/UserManagement';
 import LabManagement from '../components/LabManagement';
 import InvalidPcTypeAdmin from '../components/InvalidPcTypeAdmin';
+import ScheduleManagement from '../components/ScheduleManagement';
 import './Dashboard.css';
 
 function Dashboard() {
@@ -24,6 +26,8 @@ function Dashboard() {
   const [showComplaintForm, setShowComplaintForm] = useState(false);
   const [showPCDetails, setShowPCDetails] = useState(false);
   const [defectHistory, setDefectHistory] = useState([]);
+  const [labStatuses, setLabStatuses] = useState({});
+  const [unassignedPCsCount, setUnassignedPCsCount] = useState(0);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -50,7 +54,23 @@ function Dashboard() {
       setLabs(labList);
       if (labList.length > 0) {
         setSelectedLab(labList[0]);
+        // Load statuses for all labs
+        const statusMap = {};
+        for (const lab of labList) {
+          try {
+            const status = await getLabStatus(lab.id);
+            statusMap[lab.id] = status;
+          } catch (e) {
+            console.error(`Status failed for lab ${lab.id}`, e);
+          }
+        }
+        setLabStatuses(statusMap);
       }
+
+      // Check for unassigned PCs
+      const unassigned = await getUnassignedPCs();
+      setUnassignedPCsCount(unassigned.length);
+
     } catch (error) {
       console.error('Failed to load labs:', error);
     }
@@ -75,10 +95,24 @@ function Dashboard() {
   const loadPCs = async () => {
     if (!selectedLab) return;
     try {
-      const pcList = await getPCsByLab(selectedLab.id, filterStatus || null);
+      let pcList;
+      if (selectedLab.id === 'inventory') {
+        pcList = await getUnassignedPCs();
+      } else {
+        pcList = await getPCsByLab(selectedLab.id, filterStatus || null);
+      }
       setPcs(pcList);
     } catch (error) {
       console.error('Failed to load PCs:', error);
+    }
+  };
+
+  const loadUnassignedCount = async () => {
+    try {
+      const unassigned = await getUnassignedPCs();
+      setUnassignedPCsCount(unassigned.length);
+    } catch (error) {
+      console.error('Failed to load unassigned count:', error);
     }
   };
 
@@ -94,15 +128,27 @@ function Dashboard() {
     }
   };
 
+  const refreshPCDetails = async (pcId) => {
+    try {
+      const pcDetails = await getPCById(pcId);
+      setSelectedPC(pcDetails);
+      const history = await getDefectHistoryByPC(pcId);
+      setDefectHistory(history);
+    } catch (error) {
+      console.error('Failed to refresh PC details:', error);
+    }
+  };
+
   const handleComplaint = (pc) => {
     setSelectedPC(pc);
     setShowComplaintForm(true);
   };
 
   const handlePCUpdated = () => {
-    if (selectedLab) {
-      loadPCs();
-    }
+    // Always reload PCs when PC is updated, regardless of selectedLab
+    loadPCs();
+    // Also reload unassigned count
+    loadUnassignedCount();
   };
 
   const handleLogout = () => {
@@ -124,7 +170,7 @@ function Dashboard() {
   };
 
   const filteredPCs = pcs.filter(pc =>
-    pc.pcNumber.toLowerCase().includes(searchTerm.toLowerCase())
+    (pc.pcNumber || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const canManagePCs = user && (user.role === 'ADMIN' || user.role === 'PROFESSOR' || user.role === 'TECHNICIAN');
@@ -166,6 +212,14 @@ function Dashboard() {
             Analytics
           </button>
         )}
+        {canManagePCs && (
+          <button
+            className={`tab-button ${activeTab === 'schedule' ? 'active' : ''}`}
+            onClick={() => setActiveTab('schedule')}
+          >
+            Schedule
+          </button>
+        )}
         {canManageUsers && (
           <button
             className={`tab-button ${activeTab === 'users' ? 'active' : ''}`}
@@ -198,15 +252,46 @@ function Dashboard() {
             <div className="sidebar">
               <h3>Labs</h3>
               <div className="lab-list">
-                {labs.map(lab => (
+                {unassignedPCsCount > 0 && (
                   <button
-                    key={lab.id}
-                    className={`lab-button ${selectedLab?.id === lab.id ? 'active' : ''}`}
-                    onClick={() => setSelectedLab(lab)}
+                    className={`lab-button inventory-button ${selectedLab?.id === 'inventory' ? 'active' : ''}`}
+                    onClick={() => setSelectedLab({ id: 'inventory', name: 'Inventory' })}
                   >
-                    {lab.name || `Lab ${lab.id}`}
+                    <div className="lab-btn-content">
+                      <span className="lab-name">📦 Inventory</span>
+                      <div className="lab-status-mini count">{unassignedPCsCount}</div>
+                    </div>
+                    <div className="lab-status-times">
+                      <div className="unassigned-desc">PCs waiting to be assigned</div>
+                    </div>
                   </button>
-                ))}
+                )}
+                {labs.map(lab => {
+                  const status = labStatuses[lab.id];
+                  const isOccupied = status?.currentStatus === 'Occupied';
+                  return (
+                    <button
+                      key={lab.id}
+                      className={`lab-button ${selectedLab?.id === lab.id ? 'active' : ''}`}
+                      onClick={() => setSelectedLab(lab)}
+                    >
+                      <div className="lab-btn-content">
+                        <span className="lab-name">{lab.name || `Lab ${lab.id}`}</span>
+                        {status && (
+                          <div className={`lab-status-mini ${isOccupied ? 'occupied' : 'unoccupied'}`}>
+                            {isOccupied ? 'Occupied' : 'Free'}
+                          </div>
+                        )}
+                      </div>
+                      {status && (
+                        <div className="lab-status-times">
+                          <div className="next-occupied" title="Next Occupied">Next: {status.nextOccupied}</div>
+                          <div className="last-occupied" title="Last Occupied">Last: {status.lastOccupied}</div>
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
               {user?.role === 'ADMIN' && (
                 <div className="add-lab-section">
@@ -257,10 +342,15 @@ function Dashboard() {
                     onClick={() => handlePCClick(pc)}
                   >
                     <div className="pc-status-indicator" style={{ backgroundColor: getStatusColor(pc.status) }}></div>
-                    <h3>{pc.pcNumber}</h3>
+                    <h3>{pc.pcNumber || `Unassigned PC (${pc.id})`}</h3>
                     <p className="pc-status">
                       {pc.status.toLowerCase().replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                     </p>
+                    {pc.status !== 'WORKING' && pc.latestProblemType && (
+                      <div className="pc-issue-badge">
+                        {pc.latestProblemType.replace(/_/g, ' ')}
+                      </div>
+                    )}
                     <button
                       className="complaint-button"
                       onClick={(e) => {
@@ -280,6 +370,12 @@ function Dashboard() {
         {activeTab === 'pc-management' && canManagePCs && (
           <div className="tab-content">
             <PCManagement onPCUpdated={handlePCUpdated} />
+          </div>
+        )}
+
+        {activeTab === 'schedule' && canManagePCs && (
+          <div className="tab-content">
+            <ScheduleManagement labId={selectedLab?.id} labName={selectedLab?.name} />
           </div>
         )}
 
@@ -327,8 +423,12 @@ function Dashboard() {
             setShowComplaintForm(false);
             setSelectedPC(null);
           }}
-          onSuccess={() => {
+          onSuccess={async () => {
             setShowComplaintForm(false);
+            // Reload the PC details to get updated status
+            if (selectedPC) {
+              await refreshPCDetails(selectedPC.id);
+            }
             loadPCs();
           }}
         />

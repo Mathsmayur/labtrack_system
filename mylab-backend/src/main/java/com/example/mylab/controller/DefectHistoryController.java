@@ -17,7 +17,7 @@ public class DefectHistoryController {
     private DefectHistoryService defectHistoryService;
 
     @GetMapping("/pc/{pcId}")
-    public ResponseEntity<List<DefectHistory>> getDefectHistoryByPC(@PathVariable Long pcId) {
+    public ResponseEntity<List<com.example.mylab.dto.DefectHistoryDTO>> getDefectHistoryByPC(@PathVariable Long pcId) {
         return ResponseEntity.ok(defectHistoryService.getDefectHistoryByPC(pcId));
     }
 }
