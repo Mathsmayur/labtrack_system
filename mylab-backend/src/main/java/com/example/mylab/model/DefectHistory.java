@@ -7,9 +7,12 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
+import lombok.EqualsAndHashCode;
+
 @Entity
 @Table(name = "defect_history")
 @Data
+@EqualsAndHashCode(exclude = "pc")
 @NoArgsConstructor
 @AllArgsConstructor
 public class DefectHistory {

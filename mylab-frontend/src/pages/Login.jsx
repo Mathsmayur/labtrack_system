@@ -1,12 +1,13 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { login, register } from '../services/authService';
-import { getCurrentUser } from '../services/authService';
 import { getByUsername } from '../services/userService';
+import { useTheme } from '../context/ThemeContext';
 import './Login.css';
 
 function Login() {
-  const [isRegister, setIsRegister] = useState(false);
+  const location = useLocation();
+  const [isRegister, setIsRegister] = useState(location.state?.register || false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [department, setDepartment] = useState('');
@@ -15,6 +16,7 @@ function Login() {
   const [error, setError] = useState('');
   const [showDepartment, setShowDepartment] = useState(false);
   const navigate = useNavigate();
+  const { theme, toggleTheme } = useTheme();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -67,16 +69,29 @@ function Login() {
       } else {
         setShowDepartment(false);
       }
-    } catch (err) {
-      // ignore not found
+    } catch {
       setShowDepartment(false);
     }
   };
 
   return (
-    <div className="login-container">
-      <div className="login-card">
-        <h2 className="login-title">{isRegister ? 'Create Account' : 'LabTrack Login'}</h2>
+    <div className="login-container" data-theme={theme}>
+      <button onClick={toggleTheme} className="theme-toggle-floating">
+        {theme === 'light' ? '🌙' : '☀️'}
+      </button>
+
+      <div className="login-card glass-panel">
+        <div className="login-header">
+          <div className="login-logo">
+            <span className="neon-text-purple">Lab</span>Track
+          </div>
+          <h2 className="login-title">
+            {isRegister ? 'Create Account' : 'Welcome Back'}
+          </h2>
+          <p className="login-subtitle">
+            {isRegister ? 'Join the lab tracking network' : 'Secure access to your account'}
+          </p>
+        </div>
 
         {!isRegister ? (
           <form onSubmit={handleLogin} className="login-form">
@@ -89,7 +104,7 @@ function Login() {
                 onChange={(e) => setUsername(e.target.value)}
                 onBlur={handleUsernameBlur}
                 required
-                placeholder="Enter your username"
+                placeholder="Enter username"
               />
             </div>
             <div className="form-group">
@@ -100,7 +115,7 @@ function Login() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                placeholder="Enter your password"
+                placeholder="Enter password"
               />
             </div>
             {showDepartment && (
@@ -119,7 +134,9 @@ function Login() {
               </div>
             )}
             {error && <div className="error-message">{error}</div>}
-            <button type="submit" className="login-button">Login</button>
+            <button type="submit" className="login-button primary-btn">
+              Sign In
+            </button>
           </form>
         ) : (
           <form onSubmit={handleRegister} className="login-form">
@@ -142,7 +159,7 @@ function Login() {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
-                placeholder="Choose a username"
+                placeholder="Choose username"
               />
             </div>
             <div className="form-group">
@@ -153,11 +170,11 @@ function Login() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                placeholder="Choose a password"
+                placeholder="Choose password"
               />
             </div>
             <div className="form-group">
-              <label htmlFor="role">Role</label>
+              <label htmlFor="role">User Role</label>
               <select
                 id="role"
                 value={role}
@@ -186,27 +203,31 @@ function Login() {
               </div>
             )}
             {error && <div className="error-message">{error}</div>}
-            <button type="submit" className="login-button">Create Account</button>
+            <button type="submit" className="login-button primary-btn">
+              Create Account
+            </button>
           </form>
         )}
 
-        <p className="login-hint">
-          {isRegister ? (
-            <>
-              Already have an account?{' '}
-              <button type="button" className="link-button" onClick={() => { setIsRegister(false); setError(''); }}>
-                Login
-              </button>
-            </>
-          ) : (
-            <>
-              New to LabTrack?{' '}
-              <button type="button" className="link-button" onClick={() => { setIsRegister(true); setError(''); }}>
-                Create an account
-              </button>
-            </>
-          )}
-        </p>
+        <div className="login-footer">
+          <p className="login-hint">
+            {isRegister ? (
+              <>
+                Already authorized?{' '}
+                <button type="button" className="link-button" onClick={() => { setIsRegister(false); setError(''); }}>
+                  Sign In
+                </button>
+              </>
+            ) : (
+              <>
+                Need new access?{' '}
+                <button type="button" className="link-button" onClick={() => { setIsRegister(true); setError(''); }}>
+                  Register
+                </button>
+              </>
+            )}
+          </p>
+        </div>
       </div>
     </div>
   );

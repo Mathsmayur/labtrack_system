@@ -11,6 +11,11 @@ export const getPCById = async (id) => {
   return response.data;
 };
 
+export const getPCsByStatus = async (status) => {
+  const response = await api.get(`/pcs/status/${status}`);
+  return response.data;
+};
+
 export const createPC = async (pcData) => {
   const response = await api.post('/pcs', pcData);
   return response.data;

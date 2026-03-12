@@ -22,7 +22,16 @@ function Analytics() {
   };
 
   if (loading) {
-    return <div className="analytics-loading">Loading analytics...</div>;
+    return (
+      <div className="analytics-container">
+        <h2 className="neon-text-purple">Analytics & Reports</h2>
+        <div className="analytics-grid">
+          <div className="analytics-card skeleton" style={{ height: '250px' }}></div>
+          <div className="analytics-card skeleton" style={{ height: '250px' }}></div>
+          <div className="analytics-card skeleton" style={{ height: '250px' }}></div>
+        </div>
+      </div>
+    );
   }
 
   if (!analytics) {
@@ -81,10 +90,16 @@ function Analytics() {
             <span className="stat-value">{analytics.monthlyComplaintCount || 0}</span>
           </div>
           <div className="stat-item">
+            <span>Total Resolved Cases:</span>
+            <span className="stat-value">{analytics.totalResolvedComplaints || 0}</span>
+          </div>
+          <div className="stat-item">
             <span>Average Repair Time:</span>
             <span className="stat-value">
-              {analytics.averageRepairTime !== null && analytics.averageRepairTime !== undefined
-                ? `${Math.round(analytics.averageRepairTime)} hours`
+              {analytics.averageRepairTime !== null && analytics.averageRepairTime !== undefined && analytics.averageRepairTime > 0
+                ? (analytics.averageRepairTime < 1 
+                    ? `${Math.round(analytics.averageRepairTime * 60)} mins`
+                    : `${analytics.averageRepairTime.toFixed(1)} hours`)
                 : 'N/A'}
             </span>
           </div>

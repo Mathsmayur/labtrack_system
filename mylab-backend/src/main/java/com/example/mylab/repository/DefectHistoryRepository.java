@@ -11,4 +11,5 @@ import java.util.List;
 public interface DefectHistoryRepository extends JpaRepository<DefectHistory, Long> {
     List<DefectHistory> findByPc(PC pc);
     List<DefectHistory> findByPcOrderByOccurredAtDesc(PC pc);
+    List<DefectHistory> findByPc_Lab_IdOrderByOccurredAtDesc(Long labId);
 }

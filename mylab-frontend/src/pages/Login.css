@@ -3,25 +3,65 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--bg-deep);
+  background-image: 
+    radial-gradient(circle at 10% 10%, var(--primary-glow) 0%, transparent 50%),
+    radial-gradient(circle at 90% 90%, var(--secondary-glow) 0%, transparent 50%);
   padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.theme-toggle-floating {
+  position: absolute;
+  top: 30px;
+  right: 30px;
+  z-index: 100;
+  width: 50px;
+  height: 50px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  border-radius: 50%;
+  background: var(--bg-glass);
 }
 
 .login-card {
-  background: white;
-  color: #333;
-  padding: 40px;
-  border-radius: 10px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
   width: 100%;
-  max-width: 400px;
+  max-width: 450px;
+  padding: 50px;
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.login-logo {
+  font-size: 2.2rem;
+  font-weight: 900;
+  margin-bottom: 20px;
+  letter-spacing: -0.05em;
+  text-transform: uppercase;
+  background: linear-gradient(to right, #00C6FF, #6C5CE7);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 10px rgba(108, 92, 231, 0.4));
 }
 
 .login-title {
-  text-align: center;
-  color: #333;
-  margin-bottom: 30px;
-  font-size: 2rem;
+  font-size: 1.8rem;
+  margin-bottom: 10px;
+  color: #FFFFFF;
+  font-weight: 800;
+}
+
+.login-subtitle {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
 }
 
 .login-form {
@@ -30,80 +70,95 @@
 }
 
 .form-group {
-  margin-bottom: 20px;
+  margin-bottom: 25px;
 }
 
 .form-group label {
   display: block;
-  margin-bottom: 8px;
-  color: #555;
-  font-weight: 500;
+  margin-bottom: 10px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .form-group input,
 .form-group select {
   width: 100%;
-  padding: 12px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  color: var(--text-primary);
   font-size: 1rem;
-  box-sizing: border-box;
+  transition: all var(--transition-fast);
 }
 
 .form-group input:focus,
 .form-group select:focus {
+  border-color: var(--secondary-neon);
+  box-shadow: 0 0 15px var(--secondary-glow);
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  background: rgba(255, 255, 255, 0.08);
 }
 
-.login-button {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+.primary-btn {
+  background: linear-gradient(135deg, var(--primary-neon), var(--secondary-neon));
   color: white;
   border: none;
-  padding: 12px;
-  border-radius: 5px;
+  padding: 16px;
+  border-radius: 12px;
   font-size: 1.1rem;
-  font-weight: bold;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  margin-top: 15px;
+  box-shadow: 0 10px 25px rgba(108, 92, 231, 0.4);
   cursor: pointer;
-  transition: transform 0.2s;
-  margin-top: 10px;
+  transition: all 0.3s ease;
 }
 
-.login-button:hover {
-  transform: translateY(-2px);
-}
-
-.login-button:active {
-  transform: translateY(0);
+.primary-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 15px 30px rgba(108, 92, 231, 0.6);
+  filter: brightness(1.1);
 }
 
 .error-message {
-  color: #e74c3c;
-  margin-bottom: 15px;
-  padding: 10px;
-  background: #fee;
-  border-radius: 5px;
+  background: rgba(220, 38, 38, 0.15);
+  color: #FF8585;
+  border: 1px solid rgba(220, 38, 38, 0.3);
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 25px;
+  text-align: center;
+}
+
+.login-footer {
+  margin-top: 35px;
   text-align: center;
 }
 
 .login-hint {
-  text-align: center;
-  color: #666;
-  font-size: 0.9rem;
-  margin-top: 20px;
+  color: var(--text-muted);
+  font-size: 0.95rem;
 }
 
 .link-button {
   background: none;
   border: none;
-  color: #667eea;
+  color: var(--secondary-neon);
   cursor: pointer;
   text-decoration: underline;
   padding: 0;
-  font-size: 0.95rem;
+  font-weight: 600;
+  margin-left: 5px;
 }
 
 .link-button:hover {
-  color: #5568d3;
+  color: var(--primary-neon);
+  text-shadow: 0 0 10px var(--primary-glow);
 }

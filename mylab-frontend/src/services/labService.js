@@ -25,3 +25,8 @@ export const deleteLab = async (id) => {
   const response = await api.delete(`/labs/${id}`);
   return response.data;
 };
+
+export const getLabInventorySummary = async (id) => {
+  const response = await api.get(`/labs/${id}/inventory-summary`);
+  return response.data;
+};

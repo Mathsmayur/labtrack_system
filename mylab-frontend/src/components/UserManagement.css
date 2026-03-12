@@ -1,10 +1,11 @@
 .user-management {
-  background: white;
-  color: #333;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  margin-bottom: 20px;
+  background: var(--bg-glass);
+  border: 1px solid var(--glass-border);
+  color: var(--text-primary);
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: var(--glass-shadow);
+  margin-bottom: 30px;
 }
 
 .user-management-header {
@@ -12,32 +13,42 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
+  border-bottom: 1px solid var(--glass-border);
+  padding-bottom: 15px;
 }
 
 .user-management-header h2 {
   margin: 0;
-  color: #333;
+  color: var(--text-primary);
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0;
 }
 
 .add-user-button {
-  background: #667eea;
-  color: white;
+  background: var(--primary-neon);
+  color: #ffffff;
   border: none;
   padding: 10px 20px;
-  border-radius: 5px;
+  border-radius: 8px;
   cursor: pointer;
-  font-size: 1rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: all var(--transition-smooth);
 }
 
 .add-user-button:hover {
-  background: #5568d3;
+  background: var(--secondary-neon);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
 .user-form {
-  background: #f9f9f9;
-  padding: 20px;
-  border-radius: 8px;
-  margin-bottom: 20px;
+  background: var(--bg-deep);
+  padding: 25px;
+  border-radius: 12px;
+  border: 1px solid var(--glass-border);
+  margin-bottom: 30px;
 }
 
 .form-row {
@@ -53,35 +64,54 @@
 }
 
 .user-form label {
-  margin-bottom: 5px;
-  color: #555;
-  font-weight: 500;
+  margin-bottom: 8px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
 }
 
 .user-form input,
 .user-form select {
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  font-size: 1rem;
+  background: var(--bg-glass);
+  padding: 10px 12px;
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  transition: all var(--transition-fast);
+}
+
+.user-form input:focus,
+.user-form select:focus {
+  border-color: var(--primary-neon);
+  box-shadow: 0 0 0 2px var(--primary-glow);
+  outline: none;
+  background: var(--bg-glass);
 }
 
 .user-form .submit-button {
-  background: #667eea;
-  color: white;
+  background: var(--primary-neon);
+  color: #ffffff;
   border: none;
   padding: 10px 20px;
-  border-radius: 5px;
+  border-radius: 8px;
   cursor: pointer;
-  font-size: 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
 }
 
 .user-form .submit-button:hover {
-  background: #5568d3;
+  background: var(--secondary-neon);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
 .users-table {
   overflow-x: auto;
+  background: var(--bg-deep);
+  border-radius: 12px;
+  border: 1px solid var(--glass-border);
 }
 
 .users-table table {
@@ -89,33 +119,41 @@
   border-collapse: collapse;
 }
 
-.users-table th,
-.users-table td {
-  padding: 12px;
-  text-align: left;
-  border-bottom: 1px solid #eee;
-}
-
 .users-table th {
-  background: #f5f5f5;
-  font-weight: 600;
-  color: #333;
+  padding: 15px;
+  text-align: left;
+  color: var(--text-secondary);
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--glass-border);
+  background: var(--bg-glass);
 }
 
-.users-table tr:hover {
-  background: #f9f9f9;
+.users-table td {
+  padding: 15px;
+  background: transparent;
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.users-table tr:hover td {
+  background: var(--bg-glass);
 }
 
 .delete-button {
-  background: #e74c3c;
-  color: white;
-  border: none;
+  background: transparent;
+  color: var(--status-broken);
+  border: 1px solid var(--status-broken);
   padding: 6px 12px;
-  border-radius: 5px;
+  border-radius: 6px;
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
 }
 
 .delete-button:hover {
-  background: #c0392b;
+  background: var(--status-broken);
+  color: #ffffff;
 }

@@ -7,9 +7,12 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
+import lombok.EqualsAndHashCode;
+
 @Entity
 @Table(name = "complaints")
 @Data
+@EqualsAndHashCode(exclude = {"pc", "user"})
 @NoArgsConstructor
 @AllArgsConstructor
 public class Complaint {

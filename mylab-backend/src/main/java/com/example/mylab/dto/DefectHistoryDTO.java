@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 public class DefectHistoryDTO {
     private Long id;
     private Long pcId;
+    private String pcNumber;
     private ProblemType problemType;
     private String description;
     private LocalDateTime occurredAt;

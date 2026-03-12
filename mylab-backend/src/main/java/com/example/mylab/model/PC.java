@@ -9,9 +9,12 @@ import lombok.NoArgsConstructor;
 
 import java.util.Set;
 
+import lombok.EqualsAndHashCode;
+
 @Entity
 @Table(name = "pcs")
 @Data
+@EqualsAndHashCode(exclude = {"complaints", "defectHistories", "pcType", "lab"})
 @NoArgsConstructor
 @AllArgsConstructor
 public class PC {

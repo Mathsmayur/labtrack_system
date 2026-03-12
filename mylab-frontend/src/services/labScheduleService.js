@@ -15,6 +15,18 @@ export const deleteSchedule = async (id) => {
     return response.data;
 };
 
+export const getAllSchedules = async () => {
+    const response = await api.get('/schedules/all');
+    return response.data;
+};
+
+export const getFreeLabs = async (dayOfWeek, startTime, endTime) => {
+    const response = await api.get('/schedules/free-labs', {
+        params: { dayOfWeek, startTime, endTime }
+    });
+    return response.data;
+};
+
 export const getLabStatus = async (labId) => {
     const response = await api.get(`/schedules/status/${labId}`);
     return response.data;

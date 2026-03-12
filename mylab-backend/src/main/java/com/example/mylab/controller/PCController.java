@@ -26,19 +26,49 @@ public class PCController {
     }
 
     @GetMapping("/lab/{labId}")
-    public ResponseEntity<List<PCDTO>> getPCsByLab(
+    public ResponseEntity<?> getPCsByLab(
             @PathVariable Long labId,
             @RequestParam(required = false) String status) {
-        if (status != null && !status.isEmpty()) {
-            PCStatus pcStatus = PCStatus.valueOf(status);
-            return ResponseEntity.ok(pcService.getPCsByLabAndStatus(labId, pcStatus));
+        try {
+            if (status != null && !status.isEmpty()) {
+                PCStatus pcStatus = PCStatus.valueOf(status);
+                return ResponseEntity.ok(pcService.getPCsByLabAndStatus(labId, pcStatus));
+            }
+            return ResponseEntity.ok(pcService.getPCsByLab(labId));
+        } catch (Exception e) {
+            java.io.StringWriter sw = new java.io.StringWriter();
+            e.printStackTrace(new java.io.PrintWriter(sw));
+            return ResponseEntity.status(500).body(sw.toString());
         }
-        return ResponseEntity.ok(pcService.getPCsByLab(labId));
+    }
+
+    @GetMapping("/status/{status}")
+    public ResponseEntity<?> getPCsByStatus(@PathVariable String status) {
+        try {
+            PCStatus pcStatus = PCStatus.valueOf(status);
+            return ResponseEntity.ok(pcService.getPCsByStatus(pcStatus));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(new ErrorResponse("Invalid status: " + status));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(new ErrorResponse("Internal server error: " + e.getMessage()));
+        }
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<PCDTO> getPCById(@PathVariable Long id) {
         return ResponseEntity.ok(pcService.getPCById(id));
+    }
+
+    @GetMapping("/debug/{id}")
+    public ResponseEntity<String> debugPCById(@PathVariable Long id) {
+        try {
+            pcService.getPCById(id);
+            return ResponseEntity.ok("Success");
+        } catch (Exception e) {
+            java.io.StringWriter sw = new java.io.StringWriter();
+            e.printStackTrace(new java.io.PrintWriter(sw));
+            return ResponseEntity.status(500).body(sw.toString());
+        }
     }
 
     @PostMapping

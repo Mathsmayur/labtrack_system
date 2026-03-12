@@ -1,15 +1,21 @@
 .pc-management {
-  background: white;
-  color: #333;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  margin-bottom: 20px;
+  background: var(--bg-glass);
+  border: 1px solid var(--glass-border);
+  color: var(--text-primary);
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: var(--glass-shadow);
+  margin-bottom: 30px;
 }
 
 .pc-management h2 {
   margin-top: 0;
-  color: #333;
+  color: var(--text-primary);
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  border-bottom: 1px solid var(--glass-border);
+  padding-bottom: 15px;
 }
 
 .pc-form {
@@ -24,18 +30,33 @@
 }
 
 .pc-form label {
-  margin-bottom: 5px;
-  color: #555;
-  font-weight: 500;
+  margin-bottom: 8px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .pc-form input,
 .pc-form select,
 .pc-form textarea {
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  font-size: 1rem;
+  background: var(--bg-deep);
+  padding: 10px 15px;
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  transition: all var(--transition-fast);
+}
+
+.pc-form input:focus,
+.pc-form select:focus,
+.pc-form textarea:focus {
+  border-color: var(--primary-neon);
+  box-shadow: 0 0 0 2px var(--primary-glow);
+  outline: none;
+  background: var(--bg-glass);
 }
 
 .pc-form textarea {
@@ -53,25 +74,89 @@
 .pc-form .cancel-button {
   padding: 10px 20px;
   border: none;
-  border-radius: 5px;
+  border-radius: 8px;
   cursor: pointer;
-  font-size: 1rem;
+  font-size: 0.95rem;
+  font-weight: 600;
 }
 
 .pc-form .submit-button {
-  background: #667eea;
-  color: white;
+  background: var(--primary-neon);
+  color: #ffffff;
+  transition: all var(--transition-fast);
 }
 
 .pc-form .submit-button:hover {
-  background: #5568d3;
+  background: var(--secondary-neon);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
 .pc-form .cancel-button {
-  background: #ddd;
-  color: #333;
+  background: var(--bg-deep);
+  border: 1px solid var(--glass-border);
+  color: var(--text-secondary);
+  transition: all var(--transition-fast);
 }
 
 .pc-form .cancel-button:hover {
-  background: #ccc;
+  background: var(--bg-glass);
+  border-color: var(--text-primary);
+  color: var(--text-primary);
+}
+
+/* Professional Table Styles */
+.nebula-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  margin-top: 20px;
+  background: var(--bg-deep);
+  border-radius: 12px;
+  border: 1px solid var(--glass-border);
+  overflow: hidden;
+}
+
+.nebula-table thead tr {
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--glass-border);
+  background: var(--bg-glass);
+}
+
+.nebula-table th {
+  padding: 16px 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+}
+
+.nebula-table tbody tr {
+  background: transparent;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.nebula-table tbody tr:hover {
+  background: var(--bg-glass);
+}
+
+.nebula-table td {
+  padding: 14px 12px;
+  color: var(--text-primary);
+}
+
+.search-input, .filter-select {
+  background: var(--bg-deep) !important;
+  border: 1px solid var(--glass-border) !important;
+  color: var(--text-primary) !important;
+  border-radius: 8px;
+  padding: 8px 12px;
+  transition: all 0.3s;
+}
+
+.search-input:focus, .filter-select:focus {
+  border-color: var(--primary-neon) !important;
+  box-shadow: 0 0 0 2px var(--primary-glow) !important;
+  outline: none;
 }

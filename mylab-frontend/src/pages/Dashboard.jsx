@@ -1,8 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getCurrentUser, logout } from '../services/authService';
 import { getLabs, createLab } from '../services/labService';
-import { getPCsByLab, getPCById, updatePC as updatePCService, getUnassignedPCs } from '../services/pcService';
+import { getPCsByLab, getPCById, updatePC as updatePCService, getUnassignedPCs, deletePC } from '../services/pcService';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import { getDefectHistoryByPC } from '../services/defectHistoryService';
 import { createComplaint } from '../services/complaintService';
 import { getLabStatus } from '../services/labScheduleService';
@@ -12,11 +14,23 @@ import UserManagement from '../components/UserManagement';
 import LabManagement from '../components/LabManagement';
 import InvalidPcTypeAdmin from '../components/InvalidPcTypeAdmin';
 import ScheduleManagement from '../components/ScheduleManagement';
+import LabOccupancyChart from '../components/LabOccupancyChart';
+import LabAvailabilitySearch from '../components/LabAvailabilitySearch';
+import MasterSchedule from '../components/MasterSchedule';
+import BrokenPCOverview from '../components/BrokenPCOverview';
+import LabInventorySummary from '../components/LabInventorySummary';
+import Sidebar from '../components/Sidebar';
+import DashboardSummaryCards from '../components/DashboardSummaryCards';
+import ceIcon from '../assets/ce-icon.png';
+import itIcon from '../assets/it-icon.png';
+import { useTheme } from '../context/ThemeContext';
 import './Dashboard.css';
 
 function Dashboard() {
+  const { theme, toggleTheme } = useTheme();
   const [user, setUser] = useState(null);
-  const [activeTab, setActiveTab] = useState('labs');
+  const [activeTab, setActiveTab] = useState('overview');
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(window.innerWidth <= 768);
   const [labs, setLabs] = useState([]);
   const [selectedLab, setSelectedLab] = useState(null);
   const [pcs, setPcs] = useState([]);
@@ -28,25 +42,19 @@ function Dashboard() {
   const [defectHistory, setDefectHistory] = useState([]);
   const [labStatuses, setLabStatuses] = useState({});
   const [unassignedPCsCount, setUnassignedPCsCount] = useState(0);
+  const [scheduleView, setScheduleView] = useState('master'); // 'master' or 'lab'
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const currentUser = getCurrentUser();
-    if (!currentUser) {
-      navigate('/login');
-      return;
+  const loadUnassignedCount = useCallback(async () => {
+    try {
+      const unassigned = await getUnassignedPCs();
+      setUnassignedPCsCount(unassigned.length);
+    } catch (error) {
+      console.error('Failed to load unassigned count:', error);
     }
-    setUser(currentUser);
-    loadLabs();
-  }, [navigate]);
+  }, []);
 
-  useEffect(() => {
-    if (selectedLab) {
-      loadPCs();
-    }
-  }, [selectedLab, filterStatus]);
-
-  const loadLabs = async () => {
+  const loadLabs = useCallback(async () => {
     try {
       const currentUser = getCurrentUser();
       const department = currentUser?.department;
@@ -68,13 +76,12 @@ function Dashboard() {
       }
 
       // Check for unassigned PCs
-      const unassigned = await getUnassignedPCs();
-      setUnassignedPCsCount(unassigned.length);
+      await loadUnassignedCount();
 
     } catch (error) {
       console.error('Failed to load labs:', error);
     }
-  };
+  }, [loadUnassignedCount]);
 
   const [showAddLabForm, setShowAddLabForm] = useState(false);
   const [newLabName, setNewLabName] = useState('');
@@ -92,7 +99,7 @@ function Dashboard() {
     }
   };
 
-  const loadPCs = async () => {
+  const loadPCs = useCallback(async () => {
     if (!selectedLab) return;
     try {
       let pcList;
@@ -105,16 +112,25 @@ function Dashboard() {
     } catch (error) {
       console.error('Failed to load PCs:', error);
     }
-  };
+  }, [selectedLab, filterStatus]);
 
-  const loadUnassignedCount = async () => {
-    try {
-      const unassigned = await getUnassignedPCs();
-      setUnassignedPCsCount(unassigned.length);
-    } catch (error) {
-      console.error('Failed to load unassigned count:', error);
+  useEffect(() => {
+    const currentUser = getCurrentUser();
+    if (!currentUser) {
+      navigate('/login');
+      return;
     }
-  };
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setUser(currentUser);
+    loadLabs();
+  }, [navigate, loadLabs]);
+
+  useEffect(() => {
+    if (selectedLab) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      loadPCs();
+    }
+  }, [selectedLab, loadPCs]);
 
   const handlePCClick = async (pc) => {
     try {
@@ -159,13 +175,13 @@ function Dashboard() {
   const getStatusColor = (status) => {
     switch (status) {
       case 'WORKING':
-        return '#4caf50';
+        return 'var(--status-working)';
       case 'NON_WORKING':
-        return '#f44336';
+        return 'var(--status-broken)';
       case 'REPAIR_IN_PROGRESS':
-        return '#ff9800';
+        return 'var(--status-repair)';
       default:
-        return '#9e9e9e';
+        return 'var(--text-muted)';
     }
   };
 
@@ -179,93 +195,98 @@ function Dashboard() {
   const canManageLabs = user && user.role === 'ADMIN';
   const canViewInvalidPcAdmin = user && user.role === 'ADMIN';
 
+  const getPCClass = (status) => {
+    switch (status) {
+      case 'NON_WORKING': return 'pc-card non-working';
+      case 'REPAIR_IN_PROGRESS': return 'pc-card repair';
+      default: return 'pc-card';
+    }
+  };
+
   return (
-    <div className="dashboard-container">
-      <header className="dashboard-header">
-        <h1>LabTrack Dashboard</h1>
-        <div className="header-actions">
-          <span className="user-info">Welcome, {user?.name} ({user?.role})</span>
-          <button onClick={handleLogout} className="logout-button">Logout</button>
-        </div>
-      </header>
+    <div className="dashboard-layout" data-theme={theme}>
+      <Sidebar 
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        user={user}
+        isCollapsed={isSidebarCollapsed}
+        toggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+        canManagePCs={canManagePCs}
+        canViewAnalytics={canViewAnalytics}
+        canManageUsers={canManageUsers}
+      />
+      
+      <div className="dashboard-main">
+        <header className="dashboard-header">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+            <button 
+              className="mobile-menu-btn glass-panel"
+              onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+            >
+              ☰
+            </button>
+            <h1 className="neon-text-purple">Labtrack System</h1>
+          </div>
+          <div className="header-actions">
+            <button onClick={toggleTheme} className="theme-toggle-dashboard">
+              {theme === 'light' ? '🌙' : '☀️'}
+            </button>
+            <span className="user-info">Logged in as <strong className="neon-text-blue">{user?.name}</strong></span>
+            <button onClick={handleLogout} className="logout-button">Logout</button>
+          </div>
+        </header>
 
-      <div className="dashboard-tabs">
-        <button
-          className={`tab-button ${activeTab === 'labs' ? 'active' : ''}`}
-          onClick={() => setActiveTab('labs')}
-        >
-          Labs
-        </button>
-        {canManagePCs && (
-          <button
-            className={`tab-button ${activeTab === 'pc-management' ? 'active' : ''}`}
-            onClick={() => setActiveTab('pc-management')}
-          >
-            PC Management
-          </button>
+        <div className="dashboard-content">
+        {activeTab === 'overview' && (
+          <div className="tab-content overview-tab">
+            <DashboardSummaryCards labs={labs} />
+            <div className="overview-widgets">
+              <div className="widget-card glass-panel">
+                 <h3 className="neon-text-purple">Critical Issues</h3>
+                 <BrokenPCOverview onRefresh={handlePCUpdated} />
+              </div>
+              <div className="widget-card glass-panel">
+                 <h3 className="neon-text-purple">System Occupancy</h3>
+                 <LabOccupancyChart />
+              </div>
+            </div>
+          </div>
         )}
-        {canViewAnalytics && (
-          <button
-            className={`tab-button ${activeTab === 'analytics' ? 'active' : ''}`}
-            onClick={() => setActiveTab('analytics')}
-          >
-            Analytics
-          </button>
-        )}
-        {canManagePCs && (
-          <button
-            className={`tab-button ${activeTab === 'schedule' ? 'active' : ''}`}
-            onClick={() => setActiveTab('schedule')}
-          >
-            Schedule
-          </button>
-        )}
-        {canManageUsers && (
-          <button
-            className={`tab-button ${activeTab === 'users' ? 'active' : ''}`}
-            onClick={() => setActiveTab('users')}
-          >
-            User Management
-          </button>
-        )}
-        {canManageLabs && (
-          <button
-            className={`tab-button ${activeTab === 'lab-management' ? 'active' : ''}`}
-            onClick={() => setActiveTab('lab-management')}
-          >
-            Lab Management
-          </button>
-        )}
-        {canViewInvalidPcAdmin && (
-          <button
-            className={`tab-button ${activeTab === 'invalid-pc-types' ? 'active' : ''}`}
-            onClick={() => setActiveTab('invalid-pc-types')}
-          >
-            Invalid PC Types
-          </button>
-        )}
-      </div>
 
-      <div className="dashboard-content">
         {activeTab === 'labs' && (
           <>
-            <div className="sidebar">
-              <h3>Labs</h3>
+            <div className="sidebar glass-panel">
+              <h3 className="neon-text-purple">Labs</h3>
               <div className="lab-list">
-                {unassignedPCsCount > 0 && (
-                  <button
-                    className={`lab-button inventory-button ${selectedLab?.id === 'inventory' ? 'active' : ''}`}
-                    onClick={() => setSelectedLab({ id: 'inventory', name: 'Inventory' })}
-                  >
+                <button
+                  className={`lab-button ${selectedLab?.id === 'issues' ? 'active' : ''}`}
+                  onClick={() => setSelectedLab({ id: 'issues', name: 'Critical Issues' })}
+                >
+                  <div className="lab-button-inner">
                     <div className="lab-btn-content">
-                      <span className="lab-name">📦 Inventory</span>
-                      <div className="lab-status-mini count">{unassignedPCsCount}</div>
+                      <span className="lab-name" style={{ color: 'var(--status-broken)', fontWeight: '800' }}>🚨 BROKEN PCS</span>
                     </div>
                     <div className="lab-status-times">
-                      <div className="unassigned-desc">PCs waiting to be assigned</div>
+                      <div className="unassigned-desc">PCs requiring urgent attention</div>
+                    </div>
+                  </div>
+                </button>
+
+                {unassignedPCsCount > 0 && (
+                  <button
+                    className={`lab-button ${selectedLab?.id === 'inventory' ? 'active' : ''}`}
+                    onClick={() => setSelectedLab({ id: 'inventory', name: 'Inventory' })}
+                  >
+                    <div className="lab-button-inner">
+                      <div className="lab-btn-content">
+                        <span className="lab-name">Unassigned PCs</span>
+                        <div className="lab-status-mini count" style={{ background: 'var(--status-repair)', color: '#fff' }}>{unassignedPCsCount}</div>
+                      </div>
+                      <div className="unassigned-desc">PCs not yet assigned to any lab</div>
                     </div>
                   </button>
                 )}
+
                 {labs.map(lab => {
                   const status = labStatuses[lab.id];
                   const isOccupied = status?.currentStatus === 'Occupied';
@@ -275,96 +296,107 @@ function Dashboard() {
                       className={`lab-button ${selectedLab?.id === lab.id ? 'active' : ''}`}
                       onClick={() => setSelectedLab(lab)}
                     >
-                      <div className="lab-btn-content">
-                        <span className="lab-name">{lab.name || `Lab ${lab.id}`}</span>
+                      <div className="lab-button-inner">
+                        <div className="lab-btn-content">
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                            <img 
+                              src={lab.name.includes('IT') ? itIcon : ceIcon} 
+                              alt="lab-icon" 
+                              style={{ width: '40px', height: '40px', objectFit: 'contain' }}
+                            />
+                            <span className="lab-name">{lab.name}</span>
+                          </div>
+                          {status && (
+                            <div className={`lab-status-mini ${isOccupied ? 'occupied' : 'unoccupied'}`}>
+                              {isOccupied ? 'BUSY' : 'READY'}
+                            </div>
+                          )}
+                        </div>
                         {status && (
-                          <div className={`lab-status-mini ${isOccupied ? 'occupied' : 'unoccupied'}`}>
-                            {isOccupied ? 'Occupied' : 'Free'}
+                          <div className="lab-status-times">
+                            <div>Next Occupancy: <span className="neon-text-blue">{status.nextOccupied}</span></div>
                           </div>
                         )}
                       </div>
-                      {status && (
-                        <div className="lab-status-times">
-                          <div className="next-occupied" title="Next Occupied">Next: {status.nextOccupied}</div>
-                          <div className="last-occupied" title="Last Occupied">Last: {status.lastOccupied}</div>
-                        </div>
-                      )}
                     </button>
                   );
                 })}
               </div>
-              {user?.role === 'ADMIN' && (
-                <div className="add-lab-section">
-                  <button className="add-lab-button" onClick={() => setShowAddLabForm(!showAddLabForm)}>
-                    {showAddLabForm ? 'Cancel' : 'Add Lab'}
-                  </button>
-                  {showAddLabForm && (
-                    <div className="add-lab-form">
-                      <input value={newLabName} onChange={(e) => setNewLabName(e.target.value)} placeholder="Lab name" />
-                      <select value={newLabDepartment} onChange={(e) => setNewLabDepartment(e.target.value)}>
-                        <option value="CE">CE</option>
-                        <option value="IT">IT</option>
-                      </select>
-                      <button onClick={handleAddLab}>Save</button>
-                    </div>
-                  )}
-                </div>
-              )}
             </div>
 
             <div className="main-content">
-              <div className="filters">
-                <select
-                  value={filterStatus}
-                  onChange={(e) => setFilterStatus(e.target.value)}
-                  className="filter-select"
-                >
-                  <option value="">All Status</option>
-                  <option value="WORKING">Working</option>
-                  <option value="NON_WORKING">Non-Working</option>
-                  <option value="REPAIR_IN_PROGRESS">Repair in Progress</option>
-                </select>
-                <input
-                  type="text"
-                  placeholder="Search PC..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="search-input"
-                />
-              </div>
-
-              <div className="pc-grid">
-                {filteredPCs.map(pc => (
-                  <div
-                    key={pc.id}
-                    className="pc-card"
-                    style={{ borderColor: getStatusColor(pc.status) }}
-                    onClick={() => handlePCClick(pc)}
-                  >
-                    <div className="pc-status-indicator" style={{ backgroundColor: getStatusColor(pc.status) }}></div>
-                    <h3>{pc.pcNumber || `Unassigned PC (${pc.id})`}</h3>
-                    <p className="pc-status">
-                      {pc.status.toLowerCase().replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                    </p>
-                    {pc.status !== 'WORKING' && pc.latestProblemType && (
-                      <div className="pc-issue-badge">
-                        {pc.latestProblemType.replace(/_/g, ' ')}
-                      </div>
-                    )}
-                    <button
-                      className="complaint-button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleComplaint(pc);
-                      }}
+              {selectedLab?.id === 'issues' ? (
+                <BrokenPCOverview onRefresh={handlePCUpdated} />
+              ) : (
+                <>
+                  <LabInventorySummary labId={selectedLab?.id} />
+                  <div className="filters glass-panel" style={{ padding: '15px' }}>
+                    <select
+                      value={filterStatus}
+                      onChange={(e) => setFilterStatus(e.target.value)}
+                      className="filter-select"
                     >
-                      Report Issue
-                    </button>
+                      <option value="">All PCs</option>
+                      <option value="WORKING">Working</option>
+                      <option value="NON_WORKING">Non-Working</option>
+                      <option value="REPAIR_IN_PROGRESS">Repair in Progress</option>
+                    </select>
+                    <input
+                      type="text"
+                      placeholder="Search PCs..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="search-input"
+                    />
                   </div>
-                ))}
-              </div>
+
+                  <div className="pc-grid">
+                    {filteredPCs.map(pc => (
+                      <div
+                        key={pc.id}
+                        className={getPCClass(pc.status)}
+                        onClick={() => handlePCClick(pc)}
+                      >
+                        <div className="pc-status-indicator" style={{ backgroundColor: getStatusColor(pc.status), boxShadow: `0 0 15px ${getStatusColor(pc.status)}` }}></div>
+                        <h3>{pc.pcNumber || `NODE-${pc.id}`}</h3>
+                        <p className="pc-status">
+                          System {pc.status.toLowerCase().replace(/_/g, ' ')}
+                        </p>
+                        {pc.status !== 'WORKING' && pc.latestProblemType && (
+                          <div className="pc-issue-badge">
+                            {pc.latestProblemType.replace(/_/g, ' ')}
+                          </div>
+                        )}
+                        <button
+                          className="complaint-button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleComplaint(pc);
+                          }}
+                        >
+                          Report Issue
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
           </>
+        )}
+        
+        {activeTab === 'broken-pcs' && (
+          <div className="tab-content" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+             <h2 className="neon-text-purple" style={{ marginBottom: '20px' }}>Global Complaints & Critical Issues</h2>
+             <BrokenPCOverview onRefresh={handlePCUpdated} />
+          </div>
+        )}
+        
+        {activeTab === 'occupancy' && (
+          <div className="tab-content" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+             <LabOccupancyChart />
+             <LabAvailabilitySearch />
+          </div>
         )}
 
         {activeTab === 'pc-management' && canManagePCs && (
@@ -375,7 +407,28 @@ function Dashboard() {
 
         {activeTab === 'schedule' && canManagePCs && (
           <div className="tab-content">
-            <ScheduleManagement labId={selectedLab?.id} labName={selectedLab?.name} />
+            <div className="view-toggle" style={{ display: 'flex', background: 'var(--bg-deep)', padding: '4px', borderRadius: '6px', marginBottom: '20px', width: 'fit-content' }}>
+              <button 
+                className={`toggle-btn ${scheduleView === 'master' ? 'active' : ''}`}
+                onClick={() => setScheduleView('master')}
+                style={{ padding: '8px 16px', border: 'none', background: scheduleView === 'master' ? 'var(--bg-glass)' : 'transparent', color: scheduleView === 'master' ? 'var(--primary-neon)' : 'var(--text-secondary)', borderRadius: '4px', cursor: 'pointer', fontWeight: '500', boxShadow: scheduleView === 'master' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none', transition: 'all 0.2s' }}
+              >
+                All Labs View
+              </button>
+              <button 
+                className={`toggle-btn ${scheduleView === 'lab' ? 'active' : ''}`}
+                onClick={() => setScheduleView('lab')}
+                style={{ padding: '8px 16px', border: 'none', background: scheduleView === 'lab' ? 'var(--bg-glass)' : 'transparent', color: scheduleView === 'lab' ? 'var(--primary-neon)' : 'var(--text-secondary)', borderRadius: '4px', cursor: 'pointer', fontWeight: '500', boxShadow: scheduleView === 'lab' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none', transition: 'all 0.2s' }}
+              >
+                Manage Specific Lab
+              </button>
+            </div>
+            
+            {scheduleView === 'master' ? (
+              <MasterSchedule labs={labs} />
+            ) : (
+              <ScheduleManagement labId={selectedLab?.id} labName={selectedLab?.name} />
+            )}
           </div>
         )}
 
@@ -433,6 +486,7 @@ function Dashboard() {
           }}
         />
       )}
+      </div>
     </div>
   );
 }
@@ -441,8 +495,65 @@ function PCDetailsModal({ pc, defectHistory, onClose, user, onPCUpdated }) {
   const [editingStatus, setEditingStatus] = useState(false);
   const [newStatus, setNewStatus] = useState(pc.status);
   const [updating, setUpdating] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const canEditStatus = user && (user.role === 'ADMIN' || user.role === 'TECHNICIAN');
+  const canDeletePc = user && (user.role === 'ADMIN' || user.role === 'PROFESSOR');
+
+  const generatePCHistoryReport = () => {
+    try {
+      const doc = new jsPDF();
+      
+      doc.setFontSize(18);
+      doc.text(`PC History Report: ${pc.pcNumber}`, 14, 20);
+      
+      doc.setFontSize(12);
+      doc.text(`PC ID: ${pc.pcNumber}`, 14, 32);
+      doc.text(`Lab: ${pc.labName || 'N/A'}`, 14, 40);
+      doc.text(`Brand/Model: ${pc.brand || 'N/A'} ${pc.model || ''}`, 14, 48);
+      doc.text(`Current Status: ${pc.status}`, 14, 56);
+      doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 64);
+
+      doc.setFontSize(14);
+      doc.text('Complete Defect History', 14, 76);
+
+      const tableData = defectHistory.map(defect => [
+        defect.problemType.replace(/_/g, ' '),
+        defect.occurredAt ? new Date(defect.occurredAt).toLocaleString() : 'N/A',
+        defect.resolvedAt ? new Date(defect.resolvedAt).toLocaleString() : 'Pending',
+        defect.status,
+        defect.technicianRemarks || 'N/A'
+      ]);
+
+      autoTable(doc, {
+        startY: 82,
+        head: [['Problem', 'Occurred', 'Resolved', 'Status', 'Remarks']],
+        body: tableData,
+        theme: 'striped',
+        headStyles: { fillColor: [41, 128, 185] }
+      });
+
+      const safeFilename = pc.pcNumber.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+      doc.save(`${safeFilename}_history_report.pdf`);
+    } catch (error) {
+      console.error('Failed to generate PC history report:', error);
+      alert('Failed to generate PC History Report');
+    }
+  };
+
+  const handleDeletePC = async () => {
+    setUpdating(true);
+    try {
+      await deletePC(pc.id);
+      if (onPCUpdated) onPCUpdated();
+      onClose();
+    } catch (error) {
+      console.error('Failed to delete PC:', error);
+      alert('Failed to delete PC. It might have active complaints or history associated with it.');
+    } finally {
+      setUpdating(false);
+    }
+  };
 
   const handleStatusUpdate = async () => {
     if (newStatus === pc.status) {
@@ -467,7 +578,33 @@ function PCDetailsModal({ pc, defectHistory, onClose, user, onPCUpdated }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h2>PC Details: {pc.pcNumber}</h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+            <h2>PC Details: {pc.pcNumber}</h2>
+            <button 
+              onClick={generatePCHistoryReport}
+              className="action-button secondary"
+              style={{ fontSize: '0.85rem', padding: '6px 12px', background: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', borderRadius: '6px', cursor: 'pointer' }}
+            >
+              📥 Download History
+            </button>
+            {canDeletePc && (
+              confirmDelete ? (
+                <div className="delete-confirm-inline">
+                  <span className="confirm-text">Are you sure?</span>
+                  <button onClick={handleDeletePC} disabled={updating} className="confirm-delete-btn">Yes, Delete</button>
+                  <button onClick={() => setConfirmDelete(false)} disabled={updating} className="cancel-delete-btn">Cancel</button>
+                </div>
+              ) : (
+                <button 
+                  onClick={() => setConfirmDelete(true)} 
+                  className="delete-pc-modal-btn"
+                  title="Remove PC from system"
+                >
+                  🗑️ Remove
+                </button>
+              )
+            )}
+          </div>
           <button className="close-button" onClick={onClose}>×</button>
         </div>
         <div className="modal-body">
@@ -529,13 +666,13 @@ function PCDetailsModal({ pc, defectHistory, onClose, user, onPCUpdated }) {
                       <p><strong>Problem:</strong> {defect.problemType.replace(/_/g, ' ')}</p>
                       {defect.description && <p><strong>Description:</strong> {defect.description}</p>}
                       <p><strong>Occurred:</strong> {occurred.toLocaleString()} ({daysSince} day{daysSince !== 1 ? 's' : ''} ago)</p>
-                      {defect.resolvedAt && (
-                        <p><strong>Resolved:</strong> {new Date(defect.resolvedAt).toLocaleString()}</p>
-                      )}
-                      <p><strong>Status:</strong> {defect.status}</p>
-                      {defect.technicianRemarks && <p><strong>Technician Remarks:</strong> {defect.technicianRemarks}</p>}
-                    </div>
-                  )
+                        {defect.resolvedAt && (
+                          <p><strong>Resolved:</strong> {new Date(defect.resolvedAt).toLocaleString()}</p>
+                        )}
+                        <p><strong>Status:</strong> {defect.status}</p>
+                        {defect.technicianRemarks && <p><strong>Technician Remarks:</strong> {defect.technicianRemarks}</p>}
+                      </div>
+                    )
                 })}
               </div>
             )}
@@ -568,7 +705,7 @@ function ComplaintForm({ pc, userId, onClose, onSuccess }) {
         description: problemType === 'OTHER' ? description : null
       });
       onSuccess();
-    } catch (err) {
+    } catch {
       setError('Failed to submit complaint. Please try again.');
     }
   };

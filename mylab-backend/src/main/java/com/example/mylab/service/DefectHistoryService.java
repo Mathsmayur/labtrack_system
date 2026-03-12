@@ -26,10 +26,17 @@ public class DefectHistoryService {
                 .collect(java.util.stream.Collectors.toList());
     }
 
+    public List<com.example.mylab.dto.DefectHistoryDTO> getDefectHistoryByLab(Long labId) {
+        return defectHistoryRepository.findByPc_Lab_IdOrderByOccurredAtDesc(labId).stream()
+                .map(this::convertToDTO)
+                .collect(java.util.stream.Collectors.toList());
+    }
+
     private com.example.mylab.dto.DefectHistoryDTO convertToDTO(DefectHistory history) {
         return new com.example.mylab.dto.DefectHistoryDTO(
                 history.getId(),
                 history.getPc().getId(),
+                history.getPc().getPcNumber(),
                 history.getProblemType(),
                 history.getDescription(),
                 history.getOccurredAt(),

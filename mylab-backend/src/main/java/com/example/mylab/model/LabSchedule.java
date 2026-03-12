@@ -3,6 +3,7 @@ package com.example.mylab.model;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalTime;
@@ -10,6 +11,7 @@ import java.time.LocalTime;
 @Entity
 @Table(name = "lab_schedules")
 @Data
+@EqualsAndHashCode(exclude = "lab")
 @NoArgsConstructor
 @AllArgsConstructor
 public class LabSchedule {

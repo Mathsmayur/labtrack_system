@@ -17,12 +17,21 @@ public class LabController {
     @Autowired
     private LabService labService;
 
+    @Autowired
+    private com.example.mylab.service.AnalyticsService analyticsService;
+
     @GetMapping
     public ResponseEntity<List<LabDTO>> getAllLabs(@RequestParam(required = false) String department) {
         if (department != null && !department.isEmpty()) {
             return ResponseEntity.ok(labService.getLabsByDepartment(department));
         }
         return ResponseEntity.ok(labService.getAllLabs());
+    }
+
+    @GetMapping("/{id}/inventory-summary")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TECHNICIAN', 'PROFESSOR')")
+    public ResponseEntity<java.util.Map<String, Object>> getLabInventorySummary(@PathVariable Long id) {
+        return ResponseEntity.ok(analyticsService.getLabInventorySummary(id));
     }
 
     @GetMapping("/{id}")

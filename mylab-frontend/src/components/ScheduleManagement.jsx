@@ -1,10 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { getSchedulesByLab, createSchedule, deleteSchedule } from '../services/labScheduleService';
 import './ScheduleManagement.css';
 
 function ScheduleManagement({ labId, labName }) {
     const [schedules, setSchedules] = useState([]);
-    const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
     // Form state
@@ -16,24 +15,22 @@ function ScheduleManagement({ labId, labName }) {
 
     const days = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
 
-    useEffect(() => {
-        if (labId) {
-            loadSchedules();
-        }
-    }, [labId]);
-
-    const loadSchedules = async () => {
-        setLoading(true);
+    const loadSchedules = useCallback(async () => {
         try {
             const data = await getSchedulesByLab(labId);
             setSchedules(data);
         } catch (err) {
             setError('Failed to load schedules');
             console.error(err);
-        } finally {
-            setLoading(false);
         }
-    };
+    }, [labId]);
+
+    useEffect(() => {
+        if (labId) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
+            loadSchedules();
+        }
+    }, [labId, loadSchedules]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -52,7 +49,7 @@ function ScheduleManagement({ labId, labName }) {
             setSubject('');
             setProfessorName('');
             loadSchedules();
-        } catch (err) {
+        } catch {
             setError('Failed to save schedule');
         }
     };
@@ -62,7 +59,7 @@ function ScheduleManagement({ labId, labName }) {
             try {
                 await deleteSchedule(id);
                 loadSchedules();
-            } catch (err) {
+            } catch {
                 setError('Failed to delete schedule');
             }
         }

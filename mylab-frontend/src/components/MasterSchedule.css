@@ -1,0 +1,180 @@
+.master-schedule {
+    background: var(--bg-glass-heavy);
+    backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    padding: 30px;
+    border-radius: 24px;
+    box-shadow: var(--glass-shadow);
+    color: var(--text-primary);
+}
+
+.master-schedule-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.day-selector {
+    display: flex;
+    gap: 8px;
+}
+
+.day-btn {
+    padding: 10px 20px;
+    border: 1px solid var(--glass-border);
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    transition: all var(--transition-fast);
+}
+
+.day-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+}
+
+.day-btn.active {
+    background: linear-gradient(135deg, var(--primary-neon), var(--secondary-neon));
+    color: white;
+    border-color: transparent;
+    font-weight: 800;
+    box-shadow: 0 0 20px var(--primary-glow);
+}
+
+.master-grid-container {
+    overflow-x: auto;
+    border: 1px solid var(--glass-border);
+    border-radius: 15px;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.master-grid {
+    min-width: 1000px;
+    position: relative;
+}
+
+.grid-header-row {
+    display: flex;
+    background: rgba(255, 255, 255, 0.05);
+    border-bottom: 2px solid var(--glass-border);
+}
+
+.lab-column-header {
+    width: 150px;
+    padding: 18px 15px;
+    font-weight: 800;
+    border-right: 1px solid var(--glass-border);
+    position: sticky;
+    left: 0;
+    background: rgba(10, 15, 30, 0.98);
+    backdrop-filter: blur(10px);
+    z-index: 2;
+    color: #00C6FF;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+}
+
+.time-slots-header {
+    flex: 1;
+    display: flex;
+}
+
+.time-slot-label {
+    flex: 1;
+    text-align: center;
+    font-size: 0.8rem;
+    color: #B8C0FF;
+    padding: 12px 0;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+}
+
+.lab-row {
+    display: flex;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.lab-name-cell {
+    width: 150px;
+    padding: 15px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    border-right: 1px solid var(--glass-border);
+    position: sticky;
+    left: 0;
+    background: rgba(10, 15, 30, 0.95);
+    z-index: 1;
+    color: #FFFFFF;
+}
+
+.timeline-cell {
+    flex: 1;
+    height: 80px;
+    position: relative;
+    background-image: linear-gradient(to right, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+    background-size: calc(100% / 12) 100%;
+}
+
+.schedule-block {
+    position: absolute;
+    top: 8px;
+    bottom: 8px;
+    background: rgba(112, 0, 255, 0.15);
+    border-left: 4px solid var(--primary-neon);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 0.75rem;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(112, 0, 255, 0.3);
+    border-left-width: 4px;
+}
+
+.block-subject {
+    font-weight: 700;
+    color: var(--secondary-neon);
+    display: block;
+    margin-bottom: 2px;
+}
+
+.block-prof {
+    color: var(--text-secondary);
+    font-size: 0.7rem;
+}
+
+.view-toggle {
+    display: flex;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 4px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+    border: 1px solid var(--glass-border);
+}
+
+.toggle-btn {
+    flex: 1;
+    padding: 8px 16px;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: all 0.3s ease;
+}
+
+.toggle-btn.active {
+    background: var(--primary-neon);
+    color: white;
+    box-shadow: 0 4px 15px var(--primary-glow);
+}

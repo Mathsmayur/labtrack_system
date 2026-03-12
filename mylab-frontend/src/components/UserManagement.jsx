@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { getAllUsers, createUser, deleteUser } from '../services/userService';
 import './UserManagement.css';
 
@@ -14,18 +14,19 @@ function UserManagement() {
   });
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    loadUsers();
-  }, []);
-
-  const loadUsers = async () => {
+  const loadUsers = useCallback(async () => {
     try {
       const userList = await getAllUsers();
       setUsers(userList);
     } catch (error) {
       console.error('Failed to load users:', error);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadUsers();
+  }, [loadUsers]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

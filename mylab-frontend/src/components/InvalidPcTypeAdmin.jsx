@@ -26,7 +26,7 @@ function InvalidPcTypeAdmin() {
       await cleanupInvalidPcType(id);
       setMessage('Row cleaned');
       load();
-    } catch (err) {
+    } catch {
       setMessage('Failed to clean row');
     }
   };
@@ -36,7 +36,7 @@ function InvalidPcTypeAdmin() {
       const res = await cleanupAllInvalidPcTypes();
       setMessage(`${res} rows cleaned`);
       load();
-    } catch (err) {
+    } catch {
       setMessage('Failed to clean rows');
     }
   };
@@ -44,7 +44,7 @@ function InvalidPcTypeAdmin() {
   return (
     <div className="lab-management">
       <h2>Invalid PC Type Rows</h2>
-      {message && <div className="error-message" style={{ background:'#e6ffed', color:'#216e39' }}>{message}</div>}
+      {message && <div className="error-message" style={{ background: 'rgba(0, 255, 136, 0.1)', color: 'var(--status-working)', border: '1px solid rgba(0, 255, 136, 0.3)' }}>{message}</div>}
       <div style={{ marginBottom: 12 }}>
         <button className="add-lab-button" onClick={handleCleanupAll}>Cleanup All</button>
         <button className="add-lab-button" onClick={load} style={{ marginLeft: 8 }}>Refresh</button>

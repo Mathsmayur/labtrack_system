@@ -1,0 +1,131 @@
+.lab-availability-search {
+  background: var(--bg-glass-heavy);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  padding: 30px;
+  border-radius: 24px;
+  box-shadow: var(--glass-shadow);
+  margin-top: 24px;
+  color: var(--text-primary);
+}
+
+.lab-availability-search h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--secondary-neon);
+  margin-bottom: 25px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.search-form {
+  display: flex;
+  gap: 20px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  margin-bottom: 30px;
+}
+
+.form-group-search {
+  flex: 1;
+  min-width: 150px;
+}
+
+.form-group-search label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.form-group-search select,
+.form-group-search input {
+  width: 100%;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  color: var(--text-primary);
+  font-size: 1rem;
+  transition: all var(--transition-fast);
+}
+
+.form-group-search select:focus,
+.form-group-search input:focus {
+  border-color: var(--secondary-neon);
+  box-shadow: 0 0 15px var(--secondary-glow);
+  outline: none;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.search-submit-btn {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, var(--primary-neon), var(--accent-purple));
+  color: white;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  transition: all var(--transition-fast);
+}
+
+.search-submit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px var(--primary-glow);
+}
+
+.search-submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.results-header {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: var(--primary-neon);
+}
+
+.labs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 15px;
+}
+
+.lab-result-card {
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--glass-border);
+  border-radius: 15px;
+  transition: all var(--transition-fast);
+}
+
+.lab-result-card:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: var(--secondary-neon);
+  transform: scale(1.02);
+}
+
+.result-lab-name {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  margin-bottom: 5px;
+}
+
+.result-lab-dept {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.no-results {
+  color: var(--text-secondary);
+  font-style: italic;
+  text-align: center;
+  padding: 20px;
+}

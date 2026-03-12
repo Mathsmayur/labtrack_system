@@ -16,4 +16,6 @@ public class AnalyticsDTO {
     private Long weeklyComplaintCount;
     private Long monthlyComplaintCount;
     private Double averageRepairTime;
+    private Long totalResolvedComplaints;
+    private List<Map<String, Object>> labInventorySummary;
 }

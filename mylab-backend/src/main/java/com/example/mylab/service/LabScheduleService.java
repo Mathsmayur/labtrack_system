@@ -33,6 +33,12 @@ public class LabScheduleService {
                 .collect(Collectors.toList());
     }
 
+    public List<LabScheduleDTO> getAllSchedules() {
+        return labScheduleRepository.findAll().stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
     public LabScheduleDTO createSchedule(LabScheduleDTO dto) {
         Lab lab = labRepository.findById(dto.getLabId())
                 .orElseThrow(() -> new RuntimeException("Lab not found"));
@@ -46,6 +52,18 @@ public class LabScheduleService {
         schedule.setProfessorName(dto.getProfessorName());
 
         return convertToDTO(labScheduleRepository.save(schedule));
+    }
+
+    public List<com.example.mylab.dto.LabDTO> getFreeLabs(String dayOfWeek, LocalTime startTime, LocalTime endTime) {
+        List<Lab> allLabs = labRepository.findAll();
+        List<LabSchedule> allSchedules = labScheduleRepository.findByDayOfWeek(dayOfWeek.toUpperCase());
+
+        return allLabs.stream()
+                .filter(lab -> allSchedules.stream()
+                        .noneMatch(s -> s.getLab().getId().equals(lab.getId()) &&
+                                s.getStartTime().isBefore(endTime) && s.getEndTime().isAfter(startTime)))
+                .map(lab -> new com.example.mylab.dto.LabDTO(lab.getId(), lab.getName(), lab.getDepartment()))
+                .collect(Collectors.toList());
     }
 
     public void deleteSchedule(Long id) {

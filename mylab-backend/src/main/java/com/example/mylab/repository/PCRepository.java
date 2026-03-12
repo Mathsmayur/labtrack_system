@@ -12,10 +12,27 @@ import java.util.Optional;
 
 @Repository
 public interface PCRepository extends JpaRepository<PC, Long> {
+    
+    @org.springframework.data.jpa.repository.Query("SELECT p.lab, p.pcType, COUNT(p) " +
+           "FROM PC p WHERE p.lab IS NOT NULL " +
+           "GROUP BY p.lab, p.pcType")
+    List<Object[]> findInventorySummary();
+
+    @org.springframework.data.jpa.repository.Query("SELECT p.pcType, COUNT(p) " +
+           "FROM PC p WHERE p.lab = :lab " +
+           "GROUP BY p.pcType")
+    List<Object[]> findInventorySummaryByLab(@org.springframework.data.repository.query.Param("lab") Lab lab);
+
+    @org.springframework.data.jpa.repository.Query("SELECT p.pcType, p.status, COUNT(p) " +
+           "FROM PC p WHERE p.lab = :lab " +
+           "GROUP BY p.pcType, p.status")
+    List<Object[]> findDetailedInventorySummaryByLab(@org.springframework.data.repository.query.Param("lab") Lab lab);
+
     List<PC> findByLab(Lab lab);
     List<PC> findByLabAndStatus(Lab lab, PCStatus status);
     Optional<PC> findByLabAndPcNumber(Lab lab, String pcNumber);
     long countByPcType(PCType pcType);
     List<PC> findByPcType(PCType pcType);
     List<PC> findByLabIsNull();
+    List<PC> findByStatus(PCStatus status);
 }

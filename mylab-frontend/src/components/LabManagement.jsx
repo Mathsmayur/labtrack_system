@@ -22,11 +22,7 @@ function LabManagement() {
   const [bulkError, setBulkError] = useState('');
   const [bulkSuccess, setBulkSuccess] = useState('');
 
-  useEffect(() => {
-    loadLabs();
-  }, []);
-
-  const loadLabs = async () => {
+  async function loadLabs() {
     try {
       const list = await getLabs();
       setLabs(list);
@@ -34,6 +30,11 @@ function LabManagement() {
       console.error('Failed to load labs', err);
     }
   };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadLabs();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
