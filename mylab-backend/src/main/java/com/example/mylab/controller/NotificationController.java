@@ -31,5 +31,29 @@ public class NotificationController {
         User user = userService.getUserEntityByUsername(userDetails.getUsername());
         return ResponseEntity.ok(notificationService.getNotificationsForUser(user));
     }
+
+    @PutMapping("/{id}/read")
+    public ResponseEntity<Notification> markAsRead(@PathVariable Long id) {
+        return ResponseEntity.ok(notificationService.markAsRead(id));
+    }
+
+    @PutMapping("/read-all")
+    public ResponseEntity<Void> markAllAsRead(@AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(401).build();
+        }
+        User user = userService.getUserEntityByUsername(userDetails.getUsername());
+        notificationService.markAllAsRead(user);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/unread-count")
+    public ResponseEntity<Long> getUnreadCount(@AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(401).build();
+        }
+        User user = userService.getUserEntityByUsername(userDetails.getUsername());
+        return ResponseEntity.ok(notificationService.getUnreadCount(user));
+    }
 }
 

@@ -29,5 +29,8 @@ public class Notification {
 
     @Column(nullable = false)
     private Boolean readFlag = false;
+
+    @Column
+    private String type;
 }
 

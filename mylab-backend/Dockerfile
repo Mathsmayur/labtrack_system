@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Stage 1: Build the Spring Boot application
 # Uses a JDK image from Eclipse Temurin for compilation.
 FROM eclipse-temurin:17-jdk-focal AS builder
@@ -49,4 +50,25 @@ EXPOSE 9090
 # `java -jar app.jar` executes the Spring Boot application.
 # Spring Boot automatically picks up the `server.port` from application.properties
 # and will also respect the `PORT` environment variable set by Render if it's different.
+=======
+FROM eclipse-temurin:23-jdk AS build
+WORKDIR /app
+COPY .mvn/ .mvn
+COPY mvnw pom.xml ./
+# Ensure mvnw has unix line endings and is executable
+RUN sed -i 's/\r$//' mvnw || true
+RUN chmod +x mvnw
+# Download dependencies
+RUN ./mvnw dependency:go-offline || true
+COPY src ./src
+# Build the application
+RUN ./mvnw clean package -DskipTests
+
+# Run stage
+FROM eclipse-temurin:23-jre
+WORKDIR /app
+# Copy the built jar from the build stage
+COPY --from=build /app/target/*.jar app.jar
+EXPOSE 8080
+>>>>>>> 6c07ac2 (Prepared files for deployment)
 ENTRYPOINT ["java", "-jar", "app.jar"]

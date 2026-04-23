@@ -21,6 +21,7 @@ import BrokenPCOverview from '../components/BrokenPCOverview';
 import LabInventorySummary from '../components/LabInventorySummary';
 import Sidebar from '../components/Sidebar';
 import DashboardSummaryCards from '../components/DashboardSummaryCards';
+import NotificationBell from '../components/NotificationBell';
 import ceIcon from '../assets/ce-icon.png';
 import itIcon from '../assets/it-icon.png';
 import { useTheme } from '../context/ThemeContext';
@@ -231,6 +232,9 @@ function Dashboard() {
             <button onClick={toggleTheme} className="theme-toggle-dashboard">
               {theme === 'light' ? '🌙' : '☀️'}
             </button>
+            {(user?.role === 'ADMIN' || user?.role === 'TECHNICIAN') && (
+              <NotificationBell />
+            )}
             <span className="user-info">Logged in as <strong className="neon-text-blue">{user?.name}</strong></span>
             <button onClick={handleLogout} className="logout-button">Logout</button>
           </div>

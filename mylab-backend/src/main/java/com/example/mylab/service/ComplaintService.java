@@ -71,7 +71,13 @@ public class ComplaintService {
         // Notify all technicians
         userRepository.findByRole(Role.TECHNICIAN).forEach(tech -> {
             String msg = String.format("New report: PC %s - %s", pc.getPcNumber(), complaintDTO.getProblemType());
-            notificationService.createNotification(tech, msg);
+            notificationService.createNotification(tech, msg, "COMPLAINT_REPORTED");
+        });
+
+        // Notify all admins
+        userRepository.findByRole(Role.ADMIN).forEach(admin -> {
+            String msg = String.format("New report: PC %s - %s", pc.getPcNumber(), complaintDTO.getProblemType());
+            notificationService.createNotification(admin, msg, "COMPLAINT_REPORTED");
         });
 
         return convertToDTO(savedComplaint);
