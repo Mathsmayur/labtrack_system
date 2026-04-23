@@ -32,7 +32,7 @@ public class PC {
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private PCStatus status; // WORKING, NON_WORKING, REPAIR_IN_PROGRESS
-    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @ManyToOne(fetch = FetchType.EAGER, optional = true)
     @NotFound(action = NotFoundAction.IGNORE)
     @JoinColumn(name = "pc_type_id", nullable = true)
     private PCType pcType;
