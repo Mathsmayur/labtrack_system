@@ -1,0 +1,25 @@
+LabTrack System: Project Overview
+
+The LabTrack System is a full-stack web application designed to streamline the administration of computer laboratories. It centralizes the management of hardware resources, technical support requests, and scheduling, significantly reducing administrative overhead and minimizing equipment downtime.
+
+Core Features
+
+1. PC Management: Administrators can maintain an accurate, real-time inventory of all machines across multiple labs. Each PC's status (operational, defective, or under maintenance) is tracked, and a detailed defect history helps identify recurring hardware failures.
+
+2. Lab Scheduling: This module provides a clear, conflict-free timetable for lab utilization. Administrators can allocate specific time slots to subjects and faculty, preventing double-booking and confusion.
+
+3. Complaint Management: Users can instantly log complaints regarding hardware or software issues on specific PCs. IT staff can track these tickets from "Pending" to "Resolved" via the administrative dashboard.
+
+4. Notifications & Analytics: Integrated alerts keep users informed about their complaint status. For administrative oversight, an analytics dashboard provides visual summaries of lab health, defective machines, and frequent technical problems.
+
+Technology Stack & Architecture
+
+Frontend: Developed with React.js and Vite, providing a fast, responsive Single Page Application. It uses custom CSS with a modern dark theme and glassmorphism aesthetics.
+
+Backend: Built using Java and Spring Boot, exposing a secure RESTful API. It utilizes Spring Data JPA and Hibernate for data handling, and Spring Security with JWT for strict role-based access control.
+
+Database: MySQL 8.0 is used for reliable, relational data storage.
+
+Deployment
+
+The entire system is fully containerized using Docker and orchestrated via Docker Compose. It is divided into three distinct microservices: the frontend, the backend API, and the database. This ensures seamless deployment, scalability, and easy management across local setups and cloud environments like AWS.

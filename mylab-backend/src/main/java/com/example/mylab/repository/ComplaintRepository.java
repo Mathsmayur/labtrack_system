@@ -17,14 +17,14 @@ public interface ComplaintRepository extends JpaRepository<Complaint, Long> {
     @Query("SELECT c.problemType, COUNT(c) FROM Complaint c GROUP BY c.problemType ORDER BY COUNT(c) DESC")
     List<Object[]> findMostCommonProblems();
     
-    @Query("SELECT c.pc, COUNT(c) FROM Complaint c GROUP BY c.pc ORDER BY COUNT(c) DESC")
+    @Query("SELECT c.pc.id, COUNT(c) FROM Complaint c GROUP BY c.pc.id ORDER BY COUNT(c) DESC")
     List<Object[]> findMostProblematicPCs();
     
     @Query("SELECT COUNT(c) FROM Complaint c WHERE c.reportedAt BETWEEN :start AND :end")
-    Long countByDateRange(LocalDateTime start, LocalDateTime end);
+    Long countByDateRange(@org.springframework.data.repository.query.Param("start") LocalDateTime start, @org.springframework.data.repository.query.Param("end") LocalDateTime end);
     
-    @Query(value = "SELECT AVG(TIMESTAMPDIFF(MINUTE, reported_at, resolved_at)) FROM complaints WHERE resolved_at IS NOT NULL", nativeQuery = true)
-    Double findAverageRepairTime();
+    @Query("SELECT c.reportedAt, c.resolvedAt FROM Complaint c WHERE c.resolvedAt IS NOT NULL")
+    List<Object[]> findResolvedTimes();
 
     long countByStatus(com.example.mylab.model.ComplaintStatus status);
 }

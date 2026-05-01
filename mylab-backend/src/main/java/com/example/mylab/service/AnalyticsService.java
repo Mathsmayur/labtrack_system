@@ -16,7 +16,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.transaction.annotation.Transactional;
+
 @Service
+@Transactional(readOnly = true)
 public class AnalyticsService {
 
     @Autowired
@@ -31,6 +34,9 @@ public class AnalyticsService {
     @Autowired
     private LabRepository labRepository;
 
+    @Autowired
+    private com.example.mylab.repository.PCTypeRepository pcTypeRepository;
+
     public AnalyticsDTO getAnalytics() {
         AnalyticsDTO analytics = new AnalyticsDTO();
 
@@ -38,8 +44,11 @@ public class AnalyticsService {
         List<Object[]> problematicPCs = complaintRepository.findMostProblematicPCs();
         List<Map<String, Object>> pcList = new ArrayList<>();
         for (Object[] result : problematicPCs) {
-            PC pc = (PC) result[0];
+            Long pcId = (Long) result[0];
             Long count = (Long) result[1];
+            if (pcId == null) continue;
+            PC pc = pcRepository.findById(pcId).orElse(null);
+            if (pc == null) continue;
             Map<String, Object> pcMap = new HashMap<>();
             pcMap.put("pc", pcService.convertToDTO(pc));
             pcMap.put("complaintCount", count);
@@ -66,9 +75,20 @@ public class AnalyticsService {
         LocalDateTime monthStart = LocalDateTime.now().minusMonths(1);
         analytics.setMonthlyComplaintCount(complaintRepository.countByDateRange(monthStart, LocalDateTime.now()));
 
-        // Average repair time (returned in minutes from DB, convert to hours for DTO)
-        Double avgMinutes = complaintRepository.findAverageRepairTime();
-        analytics.setAverageRepairTime(avgMinutes != null ? avgMinutes / 60.0 : 0.0);
+        // Average repair time (calculate in Java to be DB-agnostic)
+        List<Object[]> resolvedTimes = complaintRepository.findResolvedTimes();
+        double totalMinutes = 0;
+        int count = 0;
+        for (Object[] time : resolvedTimes) {
+            if (time[0] != null && time[1] != null) {
+                LocalDateTime reportedAt = (LocalDateTime) time[0];
+                LocalDateTime resolvedAt = (LocalDateTime) time[1];
+                totalMinutes += java.time.Duration.between(reportedAt, resolvedAt).toMinutes();
+                count++;
+            }
+        }
+        double avgMinutes = count > 0 ? totalMinutes / count : 0.0;
+        analytics.setAverageRepairTime(avgMinutes / 60.0);
 
         // Total resolved complaints
         analytics.setTotalResolvedComplaints(complaintRepository.countByStatus(com.example.mylab.model.ComplaintStatus.RESOLVED));
@@ -78,9 +98,12 @@ public class AnalyticsService {
         Map<String, Map<String, Object>> labDataMap = new HashMap<>();
 
         for (Object[] result : inventoryData) {
-            com.example.mylab.model.Lab lab = (com.example.mylab.model.Lab) result[0];
-            com.example.mylab.model.PCType type = (com.example.mylab.model.PCType) result[1];
+            Long labId = (Long) result[0];
+            Long typeId = (Long) result[1];
             Long count = (Long) result[2];
+
+            com.example.mylab.model.Lab lab = labId != null ? labRepository.findById(labId).orElse(null) : null;
+            com.example.mylab.model.PCType type = typeId != null ? pcTypeRepository.findById(typeId).orElse(null) : null;
 
             String labName = (lab != null) ? lab.getName() : "Unassigned";
             labDataMap.putIfAbsent(labName, new HashMap<>());
@@ -130,9 +153,10 @@ public class AnalyticsService {
         Map<com.example.mylab.model.PCType, Map<String, Object>> typeMap = new HashMap<>();
 
         for (Object[] result : detailedData) {
-            com.example.mylab.model.PCType type = (com.example.mylab.model.PCType) result[0];
+            Long typeId = (Long) result[0];
             com.example.mylab.model.PCStatus status = (com.example.mylab.model.PCStatus) result[1];
             Long count = (Long) result[2];
+            com.example.mylab.model.PCType type = typeId != null ? pcTypeRepository.findById(typeId).orElse(null) : null;
 
             totalPCs += count;
             if (status == com.example.mylab.model.PCStatus.WORKING) {

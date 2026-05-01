@@ -13,19 +13,19 @@ import java.util.Optional;
 @Repository
 public interface PCRepository extends JpaRepository<PC, Long> {
     
-    @org.springframework.data.jpa.repository.Query("SELECT p.lab, p.pcType, COUNT(p) " +
+    @org.springframework.data.jpa.repository.Query("SELECT p.lab.id, p.pcType.id, COUNT(p) " +
            "FROM PC p WHERE p.lab IS NOT NULL " +
-           "GROUP BY p.lab, p.pcType")
+           "GROUP BY p.lab.id, p.pcType.id")
     List<Object[]> findInventorySummary();
 
-    @org.springframework.data.jpa.repository.Query("SELECT p.pcType, COUNT(p) " +
+    @org.springframework.data.jpa.repository.Query("SELECT p.pcType.id, COUNT(p) " +
            "FROM PC p WHERE p.lab = :lab " +
-           "GROUP BY p.pcType")
+           "GROUP BY p.pcType.id")
     List<Object[]> findInventorySummaryByLab(@org.springframework.data.repository.query.Param("lab") Lab lab);
 
-    @org.springframework.data.jpa.repository.Query("SELECT p.pcType, p.status, COUNT(p) " +
+    @org.springframework.data.jpa.repository.Query("SELECT p.pcType.id, p.status, COUNT(p) " +
            "FROM PC p WHERE p.lab = :lab " +
-           "GROUP BY p.pcType, p.status")
+           "GROUP BY p.pcType.id, p.status")
     List<Object[]> findDetailedInventorySummaryByLab(@org.springframework.data.repository.query.Param("lab") Lab lab);
 
     List<PC> findByLab(Lab lab);
