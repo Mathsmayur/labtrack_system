@@ -100,7 +100,7 @@ public class AnalyticsService {
         for (Object[] result : inventoryData) {
             Long labId = (Long) result[0];
             Long typeId = (Long) result[1];
-            Long count = (Long) result[2];
+            Long pcCount = (Long) result[2];
 
             com.example.mylab.model.Lab lab = labId != null ? labRepository.findById(labId).orElse(null) : null;
             com.example.mylab.model.PCType type = typeId != null ? pcTypeRepository.findById(typeId).orElse(null) : null;
@@ -110,7 +110,7 @@ public class AnalyticsService {
             Map<String, Object> labInfo = labDataMap.get(labName);
             
             Long currentTotal = (Long) labInfo.getOrDefault("totalPCs", 0L);
-            labInfo.put("totalPCs", currentTotal + count);
+            labInfo.put("totalPCs", currentTotal + pcCount);
             
             if (!labInfo.containsKey("typeBreakdown")) {
                 labInfo.put("typeBreakdown", new ArrayList<Map<String, Object>>());
@@ -120,7 +120,7 @@ public class AnalyticsService {
             Map<String, Object> typeEntry = new HashMap<>();
             String typeName = (type != null) ? (type.getBrand() + " " + type.getModel() + " (" + type.getProductionYear() + ")") : "Generic PC";
             typeEntry.put("typeName", typeName);
-            typeEntry.put("count", count);
+            typeEntry.put("count", pcCount);
             breakdown.add(typeEntry);
         }
 
@@ -155,14 +155,14 @@ public class AnalyticsService {
         for (Object[] result : detailedData) {
             Long typeId = (Long) result[0];
             com.example.mylab.model.PCStatus status = (com.example.mylab.model.PCStatus) result[1];
-            Long count = (Long) result[2];
+            Long pcCount = (Long) result[2];
             com.example.mylab.model.PCType type = typeId != null ? pcTypeRepository.findById(typeId).orElse(null) : null;
 
-            totalPCs += count;
+            totalPCs += pcCount;
             if (status == com.example.mylab.model.PCStatus.WORKING) {
-                totalWorking += count;
+                totalWorking += pcCount;
             } else if (status == com.example.mylab.model.PCStatus.NON_WORKING) {
-                totalNonWorking += count;
+                totalNonWorking += pcCount;
             }
 
             Map<String, Object> typeEntry = typeMap.computeIfAbsent(type, k -> {
@@ -177,11 +177,11 @@ public class AnalyticsService {
                 return entry;
             });
 
-            typeEntry.put("total", (long) typeEntry.get("total") + count);
+            typeEntry.put("total", (long) typeEntry.get("total") + pcCount);
             if (status == com.example.mylab.model.PCStatus.WORKING) {
-                typeEntry.put("working", count);
+                typeEntry.put("working", pcCount);
             } else if (status == com.example.mylab.model.PCStatus.NON_WORKING) {
-                typeEntry.put("nonWorking", count);
+                typeEntry.put("nonWorking", pcCount);
             }
         }
         
